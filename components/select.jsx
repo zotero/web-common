@@ -306,7 +306,7 @@ const Select = memo(forwardRef((props, ref) => {
 Select.displayName = 'Select';
 
 Select.propTypes = {
-	children: PropTypes.oneOfType([PropTypes.element, PropTypes.array]),
+	children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]),
 	className: PropTypes.string,
 	disabled: PropTypes.bool,
 	id: PropTypes.string,
