@@ -233,7 +233,7 @@ const Select = memo(forwardRef((props, ref) => {
 	return (
 		<div
 			{...pick(rest, p => p.startsWith('data-') || p.startsWith('aria-'))}
-			className={ cx('select-component', className, 'single', {
+			className={ cx('select-component', className, {
 				'is-searchable': searchable, 'is-focused': isFocused, 'has-value': !!value,
 				'is-keyboard': keyboard, 'is-mouse': !keyboard, 'is-disabled': disabled, 'is-readonly': readOnly
 			}) }
