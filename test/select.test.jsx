@@ -2,7 +2,7 @@ import React from 'react'
 import '@testing-library/jest-dom'
 import { render } from '@testing-library/react'
 
-import { Select } from '../js/components/select';
+import { Select } from '../components';
 
 
 describe('Select', () => {
