@@ -15,6 +15,7 @@ $warning: #ff794d !default;
 $success: #3abd57 !default;
 $info: $blue !default;
 $focus-color: $secondary !default;
+$link-color: $blue !default;
 
 $shade-0: #fff !default;
 $shade-1: #f6f6f6 !default;
@@ -152,6 +153,10 @@ $icon-color: $secondary !default;
 $icon-spin-size: $space-xl !default;
 $icon-spin-size-sm: $space-md !default;
 $icon-active-color: $shade-9 !default;
+$icon-color-touch: $link-color !default;
+$icon-spin-size-sm: $space-md !default;
+$icon-spin-size-md: $space-lg !default;
+$icon-spin-size-lg: $space-xl !default;
 
 $outline-color: $secondary !default;
 $outline-width: 3px !default;
