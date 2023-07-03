@@ -1,8 +1,8 @@
-import React from 'react';
+import { Children, Fragment } from 'react';
 
 const mapChildren = (children, mapFunc, out = []) => {
-	React.Children.toArray(children).reduce((out, child) => {
-		if(child.type === React.Fragment) {
+	Children.toArray(children).reduce((out, child) => {
+		if(child.type === Fragment) {
 			mapChildren(child.props.children, mapFunc, out);
 		} else {
 			out.push(mapFunc(child));

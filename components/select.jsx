@@ -1,4 +1,5 @@
-import React, { forwardRef, memo, useCallback, useImperativeHandle, useRef, useState, useEffect, useMemo } from 'react';
+import { cloneElement, forwardRef, memo, useCallback, useImperativeHandle, useRef, useState,
+	useEffect, useMemo, } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
 
@@ -231,7 +232,7 @@ const Select = memo(forwardRef((props, ref) => {
 	}, [highlighted, prevHighlighted, isOpen]);
 
 	return (
-		<div
+        <div
 			{...pick(rest, p => p.startsWith('data-') || p.startsWith('aria-'))}
 			className={ cx('select-component', className, {
 				'is-searchable': searchable, 'is-focused': isFocused, 'has-value': !!value,
@@ -293,14 +294,14 @@ const Select = memo(forwardRef((props, ref) => {
 						) }
 						{ mapChildren(children, child =>
 							child && child.type === SelectOption ?
-								React.cloneElement(child, { highlighted, value, onMouseDown: handleItemMouseDown }) :
+								cloneElement(child, { highlighted, value, onMouseDown: handleItemMouseDown }) :
 								child
 						) }
 					</div>
 				</div>
 			) }
 		</div>
-	);
+    );
 }));
 
 Select.displayName = 'Select';

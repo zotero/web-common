@@ -1,4 +1,8 @@
-@import "./abstracts";
+@import "abstracts/defaults";
+@import "abstracts/functions/asset-url";
+@import "abstracts/mixins/breakpoints";
+@import "abstracts/mixins/selectors";
+@import "abstracts/mixins/utilities";
 
 .select-component {
 	position: relative;
@@ -40,6 +44,14 @@
 		@include text-truncate;
 	}
 
+	.select-value {
+		align-items: center;
+		display: flex;
+		inset: 0;
+		padding: 0 $input-btn-padding-x;
+		position: absolute;
+	}
+
 	&.has-value {
 		.select-value {
 			@include mouse-and-bp-up(md) {
@@ -48,16 +60,6 @@
 		}
 	}
 
-	.select-value {
-		display: flex;
-		align-items: center;
-		position: absolute;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		padding: 0 $input-btn-padding-x;
-	}
 
 	.select-input {
 		outline: none;

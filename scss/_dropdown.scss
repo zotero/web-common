@@ -1,4 +1,7 @@
-@import "./abstracts";
+@import "abstracts/defaults";
+@import "abstracts/mixins/breakpoints";
+@import "abstracts/mixins/selectors";
+@import "abstracts/mixins/utilities";
 
 .dropdown {
 	position: relative;

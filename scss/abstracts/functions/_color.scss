@@ -1,11 +1,9 @@
-//
-// Color functions
-// --------------------------------------------------
+@use "sass:color";
 
 @function tint($color, $percentage, $tint: #fff) {
-	@return mix($tint, $color, $percentage);
+	@return color.mix($tint, $color, $percentage);
 }
 
 @function shade($color, $percentage, $shade: #000) {
-	@return mix($shade, $color, $percentage);
+	@return color.mix($shade, $color, $percentage);
 }

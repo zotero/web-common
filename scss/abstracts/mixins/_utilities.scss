@@ -1,6 +1,4 @@
-//
-// Utilities
-// --------------------------------------------------
+@use "breakpoints";
 
 @mixin text-truncate($text-overflow: ellipsis) {
   white-space: nowrap;
@@ -21,11 +19,11 @@
   	text-overflow: $text-overflow;
   	white-space: normal; // Reset
 
-  	@include touch-or-bp-down(sm) {
+  	@include breakpoints.touch-or-bp-down(sm) {
 			min-height: $lines * $line-height-computed-mobile;
 		}
 
-  	@include mouse-and-bp-up(md) {
+  	@include breakpoints.mouse-and-bp-up(md) {
 			min-height: $lines * $line-height-computed;
 		}
   }

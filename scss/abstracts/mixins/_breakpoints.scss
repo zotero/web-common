@@ -1,9 +1,9 @@
-//
-// Breakpoints
-// --------------------------------------------------
+@use "../defaults";
+@use "../functions/breakpoints";
 
-@mixin bp-up($name, $breakpoints: $grid-breakpoints) {
-  $min: breakpoint-min($name, $breakpoints);
+@mixin bp-up($name, $breakpoints: defaults.$grid-breakpoints) {
+  $min: breakpoints.breakpoint-min($name, $breakpoints);
+
   @if $min {
     @media (min-width: $min) {
       @content;
@@ -13,8 +13,9 @@
   }
 }
 
-@mixin bp-down($name, $breakpoints: $grid-breakpoints) {
-  $max: breakpoint-max($name, $breakpoints);
+@mixin bp-down($name, $breakpoints: defaults.$grid-breakpoints) {
+  $max: breakpoints.breakpoint-max($name, $breakpoints);
+
   @if $max {
     @media (max-width: $max) {
       @content;
@@ -24,7 +25,7 @@
   }
 }
 
-@mixin bp-only($name, $breakpoints: $grid-breakpoints) {
+@mixin bp-only($name, $breakpoints: defaults.$grid-breakpoints) {
   @include bp-up($name, $breakpoints) {
     @include bp-down($name, $breakpoints) {
      	@content;
@@ -34,24 +35,24 @@
 
 
 // Normalized media query mixins
-@mixin bp-up-normalized($name, $breakpoints: $grid-breakpoints) {
-	@include bp-up($name, $breakpoints: $grid-breakpoints) {
+@mixin bp-up-normalized($name, $breakpoints: defaults.$grid-breakpoints) {
+	@include bp-up($name, $breakpoints: defaults.$grid-breakpoints) {
 		html:not(.specifity) & {
 			@content;
 		}
 	}
 }
 
-@mixin bp-down-normalized($name, $breakpoints: $grid-breakpoints) {
-	@include bp-down($name, $breakpoints: $grid-breakpoints) {
+@mixin bp-down-normalized($name, $breakpoints: defaults.$grid-breakpoints) {
+	@include bp-down($name, $breakpoints: defaults.$grid-breakpoints) {
 		html:not(.specifity) & {
 			@content;
 		}
 	}
 }
 
-@mixin bp-only-normalized($name, $breakpoints: $grid-breakpoints) {
-	@include bp-only($name, $breakpoints: $grid-breakpoints) {
+@mixin bp-only-normalized($name, $breakpoints: defaults.$grid-breakpoints) {
+	@include bp-only($name, $breakpoints: defaults.$grid-breakpoints) {
 		html:not(.specifity) & {
 			@content;
 		}
@@ -60,24 +61,24 @@
 
 
 // Touch breakpoints
-@mixin touch-and-bp-up($name, $breakpoints: $grid-breakpoints) {
-	@include bp-up($name, $breakpoints: $grid-breakpoints) {
+@mixin touch-and-bp-up($name, $breakpoints: defaults.$grid-breakpoints) {
+	@include bp-up($name, $breakpoints: defaults.$grid-breakpoints) {
 	  html.touch & {
 			@content;
 		}
 	}
 }
 
-@mixin touch-and-bp-only($name, $breakpoints: $grid-breakpoints) {
+@mixin touch-and-bp-only($name, $breakpoints: defaults.$grid-breakpoints) {
 	html.touch & {
-  	@include bp-only($name, $breakpoints: $grid-breakpoints) {
+  	@include bp-only($name, $breakpoints: defaults.$grid-breakpoints) {
 			@content;
 		}
 	}
 }
 
-@mixin touch-or-bp-up($name, $breakpoints: $grid-breakpoints) {
-	@include bp-up($name, $breakpoints: $grid-breakpoints) {
+@mixin touch-or-bp-up($name, $breakpoints: defaults.$grid-breakpoints) {
+	@include bp-up($name, $breakpoints: defaults.$grid-breakpoints) {
 	  html:not(.specifity) & { // Normalize specifity
 			@content;
 		}
@@ -88,8 +89,8 @@
   }
 }
 
-@mixin touch-or-bp-down($name, $breakpoints: $grid-breakpoints) {
-	@include bp-down($name, $breakpoints: $grid-breakpoints) {
+@mixin touch-or-bp-down($name, $breakpoints: defaults.$grid-breakpoints) {
+	@include bp-down($name, $breakpoints: defaults.$grid-breakpoints) {
 	  html:not(.specifity) & { // Normalize specifity
 			@content;
 		}
@@ -100,8 +101,8 @@
   }
 }
 
-@mixin touch-or-bp-only($name, $breakpoints: $grid-breakpoints) {
-  @include bp-only($name, $breakpoints: $grid-breakpoints) {
+@mixin touch-or-bp-only($name, $breakpoints: defaults.$grid-breakpoints) {
+  @include bp-only($name, $breakpoints: defaults.$grid-breakpoints) {
 	  html:not(.specifity) & { // Normalize specifity
 			@content;
 		}
@@ -114,24 +115,24 @@
 
 
 // Touch + keyboard breakpoints
-@mixin touch-keyboard-and-bp-up($name, $breakpoints: $grid-breakpoints) {
-	@include bp-up($name, $breakpoints: $grid-breakpoints) {
+@mixin touch-keyboard-and-bp-up($name, $breakpoints: defaults.$grid-breakpoints) {
+	@include bp-up($name, $breakpoints: defaults.$grid-breakpoints) {
 	  html.touch.keyboard & {
 			@content;
 		}
 	}
 }
 
-@mixin touch-keyboard-and-bp-only($name, $breakpoints: $grid-breakpoints) {
+@mixin touch-keyboard-and-bp-only($name, $breakpoints: defaults.$grid-breakpoints) {
 	html.touch.keyboard & {
-  	@include bp-only($name, $breakpoints: $grid-breakpoints) {
+  	@include bp-only($name, $breakpoints: defaults.$grid-breakpoints) {
 			@content;
 		}
 	}
 }
 
-@mixin touch-keyboard-or-bp-up($name, $breakpoints: $grid-breakpoints) {
-	@include bp-up($name, $breakpoints: $grid-breakpoints) {
+@mixin touch-keyboard-or-bp-up($name, $breakpoints: defaults.$grid-breakpoints) {
+	@include bp-up($name, $breakpoints: defaults.$grid-breakpoints) {
 	  html:not(.specifity).keyboard & { // Normalize specifity
 			@content;
 		}
@@ -142,8 +143,8 @@
   }
 }
 
-@mixin touch-keyboard-or-bp-down($name, $breakpoints: $grid-breakpoints) {
-	@include bp-down($name, $breakpoints: $grid-breakpoints) {
+@mixin touch-keyboard-or-bp-down($name, $breakpoints: defaults.$grid-breakpoints) {
+	@include bp-down($name, $breakpoints: defaults.$grid-breakpoints) {
 	  html:not(.specifity).keyboard & { // Normalize specifity
 			@content;
 		}
@@ -154,8 +155,8 @@
   }
 }
 
-@mixin touch-keyboard-or-bp-only($name, $breakpoints: $grid-breakpoints) {
-  @include bp-only($name, $breakpoints: $grid-breakpoints) {
+@mixin touch-keyboard-or-bp-only($name, $breakpoints: defaults.$grid-breakpoints) {
+  @include bp-only($name, $breakpoints: defaults.$grid-breakpoints) {
 	  html:not(.specifity).keyboard & { // Normalize specifity
 			@content;
 		}
@@ -167,50 +168,50 @@
 }
 
 // Mouse breakpoints
-@mixin mouse-and-bp-up($name, $breakpoints: $grid-breakpoints) {
+@mixin mouse-and-bp-up($name, $breakpoints: defaults.$grid-breakpoints) {
 	html:not(.touch) & {
-		@include bp-up($name, $breakpoints: $grid-breakpoints) {
+		@include bp-up($name, $breakpoints: defaults.$grid-breakpoints) {
 			@content;
 		}
 	}
 }
 
-@mixin mouse-and-bp-down($name, $breakpoints: $grid-breakpoints) {
+@mixin mouse-and-bp-down($name, $breakpoints: defaults.$grid-breakpoints) {
 	html:not(.touch) & {
-		@include bp-down($name, $breakpoints: $grid-breakpoints) {
+		@include bp-down($name, $breakpoints: defaults.$grid-breakpoints) {
 			@content;
 		}
 	}
 }
 
-@mixin mouse-and-bp-only($name, $breakpoints: $grid-breakpoints) {
+@mixin mouse-and-bp-only($name, $breakpoints: defaults.$grid-breakpoints) {
 	html:not(.touch) & {
-  	@include bp-only($name, $breakpoints: $grid-breakpoints) {
+  	@include bp-only($name, $breakpoints: defaults.$grid-breakpoints) {
 			@content;
 		}
 	}
 }
 
 // Mouse + keyboard breakpoints
-@mixin mouse-keyboard-and-bp-up($name, $breakpoints: $grid-breakpoints) {
+@mixin mouse-keyboard-and-bp-up($name, $breakpoints: defaults.$grid-breakpoints) {
 	html:not(.touch).keyboard & {
-		@include bp-up($name, $breakpoints: $grid-breakpoints) {
+		@include bp-up($name, $breakpoints: defaults.$grid-breakpoints) {
 			@content;
 		}
 	}
 }
 
-@mixin mouse-keyboard-and-bp-down($name, $breakpoints: $grid-breakpoints) {
+@mixin mouse-keyboard-and-bp-down($name, $breakpoints: defaults.$grid-breakpoints) {
 	html:not(.touch).keyboard & {
-		@include bp-down($name, $breakpoints: $grid-breakpoints) {
+		@include bp-down($name, $breakpoints: defaults.$grid-breakpoints) {
 			@content;
 		}
 	}
 }
 
-@mixin mouse-keyboard-and-bp-only($name, $breakpoints: $grid-breakpoints) {
+@mixin mouse-keyboard-and-bp-only($name, $breakpoints: defaults.$grid-breakpoints) {
 	html:not(.touch).keyboard & {
-  	@include bp-only($name, $breakpoints: $grid-breakpoints) {
+  	@include bp-only($name, $breakpoints: defaults.$grid-breakpoints) {
 			@content;
 		}
 	}

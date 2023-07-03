@@ -1,12 +1,10 @@
-//
-// Same
-// --------------------------------------------------
+@use "sass:list";
 
 @mixin same($values...){
-    $length: length($values);
-    $value: nth($values, $length);
+    $length: list.length($values);
+    $value: list.nth($values, $length);
 
     @for $i from 1 to $length{
-        #{nth($values, $i)}: $value;
+        #{list.nth($values, $i)}: $value;
     }
 }

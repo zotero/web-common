@@ -1,10 +1,10 @@
-//
-// Button
-//
+/* stylelint-disable no-descending-specificity */
+@use "sass:color";
+@use "../defaults";
 
 @mixin button-variant($color, $outline: null, $inverse: null) {
-	$btn-color: if($inverse, $shade-0, $color);
-	$shade-0: if($inverse, $color, $shade-0);
+	$btn-color: if($inverse, defaults.$shade-0, $color);
+	$shade-0: if($inverse, $color, defaults.$shade-0);
 
 	background-color: if($outline, transparent, $btn-color);
 	border-color: if($outline, $btn-color, transparent);
@@ -18,9 +18,9 @@
 
 	&:hover {
 		@media (hover: hover) {
-			background-color: lighten($btn-color, 4%);
-			border-color: if($outline, lighten($btn-color, 4%), transparent);
-			box-shadow: 0 2px 4px $btn-box-shadow-color;
+			background-color: color.adjust($btn-color, $lightness: 4%);
+			border-color: if($outline, color.adjust($btn-color, $lightness: 4%), transparent);
+			box-shadow: 0 2px 4px defaults.$btn-box-shadow-color;
 		}
 
 		&,
@@ -33,8 +33,8 @@
 
 	&:active,
 	.show > &.dropdown-toggle {
-		background-color: darken($btn-color, 8%);
-		border-color: if($outline, darken($btn-color, 8%), transparent);
+		background-color: color.adjust($btn-color, $lightness: -8%);
+		border-color: if($outline, color.adjust($btn-color, $lightness: -8%), transparent);
 		box-shadow: none;
 
 		&,
@@ -60,48 +60,48 @@
 
 	&:focus {
 		.keyboard & {
-			box-shadow: 0 0 0 $input-btn-focus-width $btn-color;
+			box-shadow: 0 0 0 defaults.$input-btn-focus-width $btn-color;
 
 			&:hover {
-				border-color: if($outline, lighten($btn-color, 4%), transparent);
+				border-color: if($outline, color.adjust($btn-color, $lightness: 4%), transparent);
 				box-shadow:
-					0 0 0 $input-btn-focus-width lighten($btn-color, 4%),
-					0 4px 4px $btn-box-shadow-color;
+					0 0 0 defaults.$input-btn-focus-width color.adjust($btn-color, $lightness: 4%),
+					0 4px 4px defaults.$btn-box-shadow-color;
 			}
 
 			&:active {
-				box-shadow: 0 0 0 $input-btn-focus-width darken($btn-color, 8%);
+				box-shadow: 0 0 0 defaults.$input-btn-focus-width color.adjust($btn-color, $lightness: -8%);
 			}
 		}
 	}
 
 	&.success,
 	.btn-group.success > & {
-		background-color: $btn-success-color;
+		background-color: defaults.$btn-success-color;
 
 		&:hover {
 			@media (hover: hover) {
-				background-color: lighten($btn-success-color, 4%);
+				background-color: color.adjust(defaults.$btn-success-color, $lightness: 4%);
 			}
 		}
 
 		&:active {
-			background-color: darken($btn-success-color, 8%);
+			background-color: color.adjust(defaults.$btn-success-color, $lightness: -8%);
 		}
 
 		&:focus {
 			.keyboard & {
-				box-shadow: 0 0 0 $input-btn-focus-width $btn-success-color;
+				box-shadow: 0 0 0 defaults.$input-btn-focus-width defaults.$btn-success-color;
 
 				&:hover {
-					border-color: if($outline, lighten($btn-color, 4%), transparent);
+					border-color: if($outline, color.adjust($btn-color, $lightness: 4%), transparent);
 					box-shadow:
-						0 0 0 $input-btn-focus-width lighten($btn-success-color, 4%),
-						0 4px 4px $btn-box-shadow-color;
+						0 0 0 defaults.$input-btn-focus-width color.adjust(defaults.$btn-success-color, $lightness: 4%),
+						0 4px 4px defaults.$btn-box-shadow-color;
 				}
 
 				&:active {
-					box-shadow: 0 0 0 $input-btn-focus-width darken($btn-success-color, 8%);
+					box-shadow: 0 0 0 defaults.$input-btn-focus-width color.adjust(defaults.$btn-success-color, $lightness: -8%);
 				}
 			}
 		}

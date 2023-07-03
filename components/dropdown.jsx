@@ -1,4 +1,5 @@
-import React, { forwardRef, memo, useCallback, useContext, useRef, useEffect, useLayoutEffect, useState } from 'react';
+import { createContext, forwardRef, memo, useCallback, useContext, useRef, useEffect,
+	useLayoutEffect, useState, } from 'react';
 import PropTypes from 'prop-types';
 import { flip, size, shift, useFloating } from '@floating-ui/react-dom';
 import cx from 'classnames';
@@ -8,7 +9,7 @@ import { Button } from './button';
 import { pick } from '../utils/immutable';
 import { isTriggerEvent } from '../utils/event';
 
-const DropdownContext = React.createContext({});
+const DropdownContext = createContext({});
 
 export const Dropdown = memo(props => {
 	const ref = useRef(null);
