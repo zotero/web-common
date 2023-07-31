@@ -52,6 +52,7 @@ $space-xl: 32px !default;
 $space-xxl: 48px !default;
 $space-xxxl: 64px !default;
 $space-max: 96px !default;
+$space-thumb: 42px !default;
 
 
 $bp-xs: 0px !default;
@@ -69,6 +70,7 @@ $grid-breakpoints: (
 ) !default;
 
 $z-index-menu: 50 !default;
+$z-index-hairline: 20 !default;
 
 $font-size-base: 16px !default;
 $line-height-base: 1.5 !default;
@@ -178,3 +180,13 @@ $spinner-color: $secondary !default;
 
 $select-chevron-icon: "icons/chevron-11-down-777.svg" !default;
 $select-value-padding-desktop: 0 ($input-btn-padding-x - 4px) + $space-md 0 $input-btn-padding-x !default;
+
+$tabs-height: $line-height-large + $space-min !default;
+$tabs-height-touch: $space-thumb !default;
+$tabs-padding-x: $space-md !default;
+$tabs-compact-padding-x: $default-padding-x !default;
+$tabs-border-color: $shade-3 !default;
+$tab-active-color: $secondary !default;
+$tab-inactive-color: $shade-8 !default;
+$tab-pane-heading-border-color: $shade-4 !default;
+$tab-pane-heading-bg: shade($shade-1, 4%) !default;
