@@ -9,7 +9,7 @@ import { Button } from './button';
 import { pick } from '../utils/immutable';
 import { isTriggerEvent } from '../utils/event';
 
-const DropdownContext = createContext({});
+export const DropdownContext = createContext({});
 
 export const Dropdown = memo(props => {
 	const ref = useRef(null);
