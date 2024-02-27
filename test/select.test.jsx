@@ -82,6 +82,19 @@ describe('Select', () => {
 		expect(getAllByRole(listbox, 'option')).toHaveLength(1);
 		expect(getByRole(listbox, 'option', { name: 'Lorem' })).toBeInTheDocument();
 	});
+	test('If closed, should open as soon as filter is changed', async () => {
+		const user = userEvent.setup();
+		render(<Select searchable options={options} />);
+		await user.click(screen.getByRole('combobox'));
+		await user.click(screen.getByRole('combobox'));
+		expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+		expect(screen.getByRole('textbox')).toHaveFocus();
+		// filter is empty, input has focus, presing l should open the listbox with the filtered options
+		await user.keyboard('l');
+		const listbox = screen.getByRole('listbox');
+		expect(listbox).toBeInTheDocument();
+		expect(getAllByRole(listbox, 'option')).toHaveLength(1);
+	});
 	test('Should clear filter input on blur, persist otherwise', async () => {
 		const user = userEvent.setup();
 		render(<Select searchable options={options} />);

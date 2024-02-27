@@ -1,6 +1,5 @@
 import {
-	cloneElement, forwardRef, memo, useCallback, useImperativeHandle, useRef, useState,
-	useEffect, useMemo,
+	cloneElement, forwardRef, memo, useCallback, useImperativeHandle, useRef, useReducer, useEffect, useMemo,
 } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
@@ -10,18 +9,18 @@ import { pick } from '../utils/immutable';
 import { scrollIntoViewIfNeeded } from '../utils/dom';
 import { usePrevious } from '../hooks';
 
-const SelectOption = memo(({ option, value, highlighted, onMouseDown }) => {
+const SelectOption = memo(({ option, isSelected, isHighlighted, onMouseDown }) => {
 	return (
 		<div
 			className={cx('select-option', {
-				'is-focused': highlighted === option.value,
-				'is-selected': value === option.value
+				'is-focused': isHighlighted,
+				'is-selected': isSelected
 			})}
 			key={option.value}
 			onMouseDown={onMouseDown}
 			data-option-value={option.value}
 			role="option"
-			aria-selected={value === option.value}
+			aria-selected={isSelected}
 		>
 			{option.label}
 		</div>
@@ -31,43 +30,73 @@ const SelectOption = memo(({ option, value, highlighted, onMouseDown }) => {
 SelectOption.displayName = 'SelectOption';
 
 SelectOption.propTypes = {
-	highlighted: PropTypes.string,
+	isHighlighted: PropTypes.bool,
 	onMouseDown: PropTypes.func,
 	option: PropTypes.object,
-	value: PropTypes.string,
+	isSelected: PropTypes.bool,
 };
 
 const SelectDivider = memo(() => <div className="select-option select-divider" />);
 
 SelectDivider.displayName = 'SelectDivider';
 
+const selectReducer = (state, action) => {
+	switch(action.type) {
+		case 'open':
+			return { ...state, isOpen: true, isFocused: true, highlighted: action.value };
+		case 'close':
+			return { ...state, isOpen: false };
+		case 'select':
+			return { ...state, isOpen: false, filter: '', filteredOptions: action.options };
+		case 'focus':
+			return { ...state, isFocused: true };
+		case 'blur':
+			return { ...state, isFocused: false, isOpen: false, filter: '', filteredOptions: action.options };
+		case 'highlight':
+			return { ...state, highlighted: action.value, isKeyboard: true};
+		case 'highlight-reset':
+			return { ...state, highlighted: null };
+		case 'filter': {
+			const newOptions = action.options.filter(o => o.label.toLowerCase().includes(action.value.toLowerCase()));
+			const highlighted = newOptions.length && !newOptions.some(o => o.value === state.highlighted) ? newOptions[0].value : state.highlighted;
+			return { ...state, filter: action.value, filteredOptions: newOptions, highlighted, isOpen: true, isKeyboard: true };
+		}
+		case 'filter-clear':
+			return { ...state, filter: '', filteredOptions: action.options };
+		case 'mouse':
+			return { ...state, isKeyboard: false };
+		default:
+			return state;
+	}
+};
+
 const Select = memo(forwardRef((props, ref) => {
 	const { children, className, disabled, id, onBlur, onChange, onFocus, options, readOnly, searchable,
 		tabIndex = 0, value, ...rest } = props;
 
-	const valueLabel = (options.find(o => o.value === value) || (value !== null ? { label: value } : false) || options[0] || {}).label;
-	const valueIndex = options.findIndex(o => o.value === value);
+	const valueLabel = useMemo(() => (options.find(o => o.value === value) || (value !== null ? { label: value } : false) || options[0] || {}).label, [options, value]);
+	const valueIndex = useMemo(() => options.findIndex(o => o.value === value), [options, value]);
+	const [state, dispatchState] = useReducer(selectReducer, {
+		isOpen: false,
+		isFocused: false,
+		isKeyboard: false,
+		highlighted: null,
+		filter: '',
+		filteredOptions: options,
+	});
 
-	const [isOpen, setIsOpen] = useState(false);
-	const [isFocused, setIsFocused] = useState(false);
-	const [highlighted, setHighlighted] = useState(valueIndex === -1 ? null : options[valueIndex].value);
-	const [keyboard, setKeyboard] = useState(false);
-	const [filter, setFilter] = useState('');
-	const [filteredOptions, setFilteredOptions] = useState(options);
-
-	const wasOpen = usePrevious(isOpen);
-	const prevHighlighted = usePrevious(highlighted);
-
-	const selectRef = useRef(null);
-	const inputRef = useRef(null);
-	const selectMenuRef = useRef(null);
-
+	const wasOpen = usePrevious(state.isOpen);
+	const prevHighlighted = usePrevious(state.highlighted);
 	const mergedOptions = useMemo(() => {
 		const childrenOptions = flattenChildren(children)
 			.filter(c => c.type === SelectOption)
 			.map(c => ({ ...c.props.option, component: c }));
-		return [...filteredOptions, ...childrenOptions];
-	}, [children, filteredOptions]);
+		return [...state.filteredOptions, ...childrenOptions];
+	}, [children, state.filteredOptions]);
+
+	const selectRef = useRef(null);
+	const inputRef = useRef(null);
+	const selectMenuRef = useRef(null);
 
 	useImperativeHandle(ref, () => ({
 		getElement: () => {
@@ -80,15 +109,12 @@ const Select = memo(forwardRef((props, ref) => {
 
 	const handleFocus = useCallback(ev => {
 		if (!disabled && !readOnly) {
-			setIsFocused(true);
+			dispatchState({ type: 'focus' });
 			if (searchable) {
 				selectRef.current.tabIndex = -2;
 				inputRef.current.focus();
 			}
-		}
-
-		if (onFocus) {
-			onFocus(ev);
+			onFocus?.(ev);
 		}
 	}, [disabled, inputRef, searchable, onFocus, readOnly]);
 
@@ -105,31 +131,25 @@ const Select = memo(forwardRef((props, ref) => {
 			onBlur(ev)
 		}
 
-		setFilter('');
-		setFilteredOptions(options);
-		setIsOpen(false);
-		setIsFocused(false);
+		dispatchState({ type: 'blur', options });
 	}, [onBlur, options, tabIndex]);
 
 	const handleClick = useCallback(ev => {
 		if (ev.target.closest('.select-option')) {
 			return;
 		}
-		if (isOpen) {
-			setIsOpen(false);
+		if (state.isOpen) {
+			dispatchState({ type: 'close' });
 		} else if (!disabled && !readOnly) {
-			setIsOpen(true);
-			setIsFocused(true);
-			setHighlighted(valueIndex === -1 ? null : options[valueIndex].value);
+			dispatchState({ type: 'open', value: valueIndex === -1 ? null : options[valueIndex].value });
+
 		}
-	}, [disabled, options, valueIndex, readOnly, isOpen]);
+	}, [disabled, options, readOnly, state.isOpen, valueIndex]);
 
 	// using mouse down to prevent blur firing first
 	const handleItemMouseDown = useCallback(ev => {
 		selectRef.current.focus();
-		setIsOpen(false);
-		setFilter('');
-		setFilteredOptions(options);
+		dispatchState({ type: 'select', options });
 		ev.stopPropagation();
 		ev.preventDefault();
 		const newValue = ev.currentTarget.dataset.optionValue;
@@ -142,7 +162,7 @@ const Select = memo(forwardRef((props, ref) => {
 	}, [mergedOptions, onChange, options, value]);
 
 	const getNextIndex = useCallback(direction => {
-		const currentIndex = mergedOptions.findIndex(o => o.value === highlighted);
+		const currentIndex = mergedOptions.findIndex(o => o.value === state.highlighted);
 		if (currentIndex === -1) {
 			return 0;
 		}
@@ -153,7 +173,7 @@ const Select = memo(forwardRef((props, ref) => {
 			nextIndex = mergedOptions.length - 1;
 		}
 		return nextIndex;
-	}, [mergedOptions, highlighted]);
+	}, [mergedOptions, state.highlighted]);
 
 	const handleKeyDown = useCallback(ev => {
 		if (ev.target !== ev.currentTarget) {
@@ -164,91 +184,72 @@ const Select = memo(forwardRef((props, ref) => {
 			return;
 		}
 
-		if (!isOpen && (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowDown')) {
-			setIsOpen(true);
-			setFilter('');
-			setFilteredOptions(options);
-			setHighlighted(valueIndex === -1 ? null : options[valueIndex].value);
+		if (!state.isOpen && (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowDown')) {
+			dispatchState({ type: 'open', value: valueIndex === -1 ? null : options[valueIndex].value });
 			ev.preventDefault();
-		} else if (isOpen && ev.key === 'Escape') {
+		} else if (state.isOpen && ev.key === 'Escape') {
 			inputRef.current.focus();
-			setIsOpen(false);
+			dispatchState({ type: 'close' });
 			ev.stopPropagation();
-		} else if (!isOpen && ev.key === 'Escape') {
-			setFilter('');
-			setFilteredOptions(options);
-		} else if (isOpen && ev.key === 'ArrowDown') {
-			setKeyboard(true);
-			setHighlighted(mergedOptions[getNextIndex(1)]?.value);
+		} else if (!state.isOpen && ev.key === 'Escape') {
+			dispatchState({ type: 'filter-clear', options });
+		} else if (state.isOpen && ev.key === 'ArrowDown') {
+			dispatchState({ type: 'highlight', value: mergedOptions[getNextIndex(1)]?.value });
 			ev.preventDefault();
-		} else if (isOpen && ev.key === 'ArrowUp') {
-			setKeyboard(true);
-			setHighlighted(mergedOptions[getNextIndex(-1)]?.value);
+		} else if (state.isOpen && ev.key === 'ArrowUp') {
+			dispatchState({ type: 'highlight', value: mergedOptions[getNextIndex(-1)]?.value });
 			ev.preventDefault();
-		} else if (isOpen && (ev.key === 'Enter' || ev.key === ' ')) {
+		} else if (state.isOpen && (ev.key === 'Enter' || ev.key === ' ')) {
 			inputRef.current.focus();
-			setIsOpen(false);
-			setFilter('');
-			setFilteredOptions(options);
-
-			const targetOption = mergedOptions.find(mo => mo.value === highlighted);
+			dispatchState({ type: 'select', options });
+			const targetOption = mergedOptions.find(mo => mo.value === state.highlighted);
 			if (targetOption && targetOption.component && targetOption.component.props.onTrigger) {
 				targetOption.component.props.onTrigger(ev);
-			} else if (!targetOption.component && onChange && highlighted && highlighted !== value) {
-				onChange(highlighted);
+			} else if (!targetOption.component && onChange && state.highlighted && state.highlighted !== value) {
+				onChange(state.highlighted);
 			}
 			ev.preventDefault();
 		}
-	}, [disabled, highlighted, isOpen, mergedOptions, getNextIndex, onChange, value, valueIndex, options, readOnly]);
+	}, [disabled, getNextIndex, mergedOptions, onChange, options, readOnly, state.highlighted, state.isOpen, value, valueIndex]);
 
 	const handleMouseMove = useCallback(() => {
-		setKeyboard(false);
+		dispatchState({ type: 'mouse' });
 	}, []);
 
 	const handleSearchInput = useCallback(ev => {
 		const newFilter = ev.currentTarget.value;
-		if (newFilter !== filter) {
-			const newOptions = options.filter(o => o.label.toLowerCase().includes(newFilter.toLowerCase()));
-			setFilter(newFilter);
-			setFilteredOptions(newOptions);
-			if (newOptions.length && !newOptions.some(o => o.value === highlighted)) {
-				setHighlighted(newOptions[0].value);
-			}
+		if (newFilter !== state.filter) {
+			dispatchState({ type: 'filter', value: newFilter, options });
 		}
-		if (!isOpen) {
-			setIsOpen(true);
-			setFilteredOptions(options);
-			setHighlighted(valueIndex === -1 ? null : options[valueIndex].value);
-		}
-	}, [filter, isOpen, options, highlighted, valueIndex]);
+	}, [options, state.filter]);
 
 	useEffect(() => {
-		if (!isOpen && wasOpen) {
-			setHighlighted(null);
+		if (!state.isOpen && wasOpen) {
+			dispatchState({ type: 'highlight-reset' });
 		}
-		if (!wasOpen && isOpen) {
-			const highlightedEl = selectRef.current && selectRef.current.querySelector(`[data-option-value="${highlighted}"]`);
+		if (!wasOpen && state.isOpen) {
+			const highlightedEl = selectRef.current && selectRef.current.querySelector(`[data-option-value="${state.highlighted}"]`);
 			if (highlightedEl) {
 				scrollIntoViewIfNeeded(highlightedEl, selectMenuRef.current, false);
 			}
 		}
-	}, [highlighted, isOpen, wasOpen, options, valueIndex, ref]);
+	}, [state.highlighted, state.isOpen, wasOpen]);
 
 	useEffect(() => {
-		if (isOpen && highlighted !== prevHighlighted) {
-			const highlightedEl = selectRef.current && selectRef.current.querySelector(`[data-option-value="${highlighted}"]`);
+		if (state.isOpen && state.highlighted !== prevHighlighted) {
+			const highlightedEl = selectRef.current && selectRef.current.querySelector(`[data-option-value="${state.highlighted}"]`);
 			if (highlightedEl) {
 				scrollIntoViewIfNeeded(highlightedEl, selectMenuRef.current, false);
 			}
 		}
-	}, [highlighted, prevHighlighted, isOpen]);
+	}, [prevHighlighted, state.highlighted, state.isOpen]);
 
 	return (
 		<div
 			{...pick(rest, p => p.startsWith('data-') || p.startsWith('aria-'))}
 			className={cx('select-component', className, {
-				'is-searchable': searchable, 'is-focused': isFocused, 'has-value': !!value,
-				'is-keyboard': keyboard, 'is-mouse': !keyboard, 'is-disabled': disabled, 'is-readonly': readOnly
+				'is-searchable': searchable, 'is-focused': state.isFocused, 'has-value': !!value,
+				'is-keyboard': state.isKeyboard, 'is-mouse': !state.isKeyboard, 'is-disabled': disabled, 'is-readonly': readOnly
 			})}
 			id={id}
 			onBlur={handleBlur}
@@ -260,13 +261,13 @@ const Select = memo(forwardRef((props, ref) => {
 			tabIndex={disabled ? null : tabIndex}
 			aria-disabled={disabled}
 			aria-readonly={readOnly}
-			aria-expanded={isOpen}
+			aria-expanded={state.isOpen}
 			role="combobox"
 		>
 			<div className="select-control">
 				<div className="select-multi-value-wrapper">
 					<div className="select-value">
-						{(!searchable || !filter.length) && (
+						{(!searchable || !state.filter.length) && (
 							<span className="select-value-label" role="option">
 								{valueLabel}
 							</span>
@@ -279,7 +280,7 @@ const Select = memo(forwardRef((props, ref) => {
 							onKeyDown={searchable ? handleKeyDown : null}
 							ref={inputRef}
 							tabIndex={-2}
-							value={filter}
+							value={state.filter}
 						/>
 					</div>
 				</div>
@@ -287,26 +288,27 @@ const Select = memo(forwardRef((props, ref) => {
 					<span className="select-arrow" />
 				</div>
 			</div>
-			{(isFocused && isOpen) && (
+			{(state.isFocused && state.isOpen) && (
 				<div className="select-menu-outer">
 					<div className="select-menu" role="listbox" ref={selectMenuRef}>
-						{filteredOptions.map(option =>
+						{state.filteredOptions.map(option =>
 							<SelectOption
 								key={option.value}
-								highlighted={highlighted}
+								isSelected={value === option.value}
+								isHighlighted={state.highlighted === option.value}
 								onMouseDown={handleItemMouseDown}
 								option={option}
-								value={value}
+
 							/>
 						)}
-						{filteredOptions.length === 0 && (
+						{state.filteredOptions.length === 0 && (
 							<div className="select-noresults">
 								No results found
 							</div>
 						)}
 						{mapChildren(children, child =>
 							child && child.type === SelectOption ?
-								cloneElement(child, { highlighted, value, onMouseDown: handleItemMouseDown }) :
+								cloneElement(child, { isHighlighted: state.highlighted === child.props?.option?.value, isSelected: value === child.props?.option?.value, onMouseDown: handleItemMouseDown }) :
 								child
 						)}
 					</div>
