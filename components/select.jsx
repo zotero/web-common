@@ -1,5 +1,7 @@
-import { cloneElement, forwardRef, memo, useCallback, useImperativeHandle, useRef, useState,
-	useEffect, useMemo, } from 'react';
+import {
+	cloneElement, forwardRef, memo, useCallback, useImperativeHandle, useRef, useState,
+	useEffect, useMemo,
+} from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
 
@@ -11,17 +13,17 @@ import { usePrevious } from '../hooks';
 const SelectOption = memo(({ option, value, highlighted, onMouseDown }) => {
 	return (
 		<div
-			className={ cx('select-option', {
+			className={cx('select-option', {
 				'is-focused': highlighted === option.value,
 				'is-selected': value === option.value
-			}) }
-			key={ option.value }
-			onMouseDown={ onMouseDown }
-			data-option-value={ option.value }
+			})}
+			key={option.value}
+			onMouseDown={onMouseDown}
+			data-option-value={option.value}
 			role="option"
-			aria-selected={ value === option.value }
+			aria-selected={value === option.value}
 		>
-			{ option.label }
+			{option.label}
 		</div>
 	)
 });
@@ -41,7 +43,7 @@ SelectDivider.displayName = 'SelectDivider';
 
 const Select = memo(forwardRef((props, ref) => {
 	const { children, className, disabled, id, onBlur, onChange, onFocus, options, readOnly, searchable,
-	tabIndex = 0, value, ...rest } = props;
+		tabIndex = 0, value, ...rest } = props;
 
 	const valueLabel = (options.find(o => o.value === value) || (value !== null ? { label: value } : false) || options[0] || {}).label;
 	const valueIndex = options.findIndex(o => o.value === value);
@@ -77,107 +79,122 @@ const Select = memo(forwardRef((props, ref) => {
 	}));
 
 	const handleFocus = useCallback(ev => {
-		if(!disabled && !readOnly) {
+		if (!disabled && !readOnly) {
 			setIsFocused(true);
-			if(searchable) {
+			if (searchable) {
 				selectRef.current.tabIndex = -2;
 				inputRef.current.focus();
 			}
 		}
 
-		if(onFocus) {
+		if (onFocus) {
 			onFocus(ev);
 		}
 	}, [disabled, inputRef, searchable, onFocus, readOnly]);
 
 	const handleBlur = useCallback(ev => {
 		selectRef.current.tabIndex = tabIndex;
-		if(onBlur) {
+
+		if (selectRef?.current?.contains?.(ev.relatedTarget)) {
+			ev.preventDefault();
+			ev.stopPropagation();
+			return;
+		}
+
+		if (onBlur) {
 			onBlur(ev)
 		}
 
+		setFilter('');
+		setFilteredOptions(options);
 		setIsOpen(false);
 		setIsFocused(false);
-	}, [onBlur, tabIndex]);
+	}, [onBlur, options, tabIndex]);
 
 	const handleClick = useCallback(ev => {
-		if(ev.target.closest('.select-option')) {
+		if (ev.target.closest('.select-option')) {
 			return;
 		}
-		if(!disabled && !readOnly) {
+		if (isOpen) {
+			setIsOpen(false);
+		} else if (!disabled && !readOnly) {
 			setIsOpen(true);
 			setIsFocused(true);
-			setFilter('');
-			setFilteredOptions(options);
 			setHighlighted(valueIndex === -1 ? null : options[valueIndex].value);
 		}
-	}, [disabled, options, valueIndex, readOnly]);
-
+	}, [disabled, options, valueIndex, readOnly, isOpen]);
 
 	// using mouse down to prevent blur firing first
 	const handleItemMouseDown = useCallback(ev => {
+		selectRef.current.focus();
 		setIsOpen(false);
-		setIsFocused(false);
+		setFilter('');
+		setFilteredOptions(options);
 		ev.stopPropagation();
+		ev.preventDefault();
 		const newValue = ev.currentTarget.dataset.optionValue;
 		const targetOption = mergedOptions.find(mo => mo.value === newValue);
-		if(targetOption && targetOption.component && targetOption.component.props.onTrigger) {
+		if (targetOption && targetOption.component && targetOption.component.props.onTrigger) {
 			targetOption.component.props.onTrigger(ev);
-		} else if(!targetOption.component && onChange && newValue !== value) {
+		} else if (!targetOption.component && onChange && newValue !== value) {
 			onChange(newValue);
 		}
-	}, [mergedOptions, onChange, value]);
+	}, [mergedOptions, onChange, options, value]);
 
 	const getNextIndex = useCallback(direction => {
 		const currentIndex = mergedOptions.findIndex(o => o.value === highlighted);
-		if(currentIndex === -1) {
+		if (currentIndex === -1) {
 			return 0;
 		}
 		let nextIndex = currentIndex + direction;
-		if(nextIndex > mergedOptions.length - 1) {
+		if (nextIndex > mergedOptions.length - 1) {
 			nextIndex = 0;
-		} else if(nextIndex === -1) {
+		} else if (nextIndex === -1) {
 			nextIndex = mergedOptions.length - 1;
 		}
 		return nextIndex;
 	}, [mergedOptions, highlighted]);
 
 	const handleKeyDown = useCallback(ev => {
-		if(ev.target !== ev.currentTarget) {
+		if (ev.target !== ev.currentTarget) {
 			return;
 		}
 
-		if(disabled || readOnly) {
+		if (disabled || readOnly) {
 			return;
 		}
 
-		if(!isOpen && (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowDown')) {
+		if (!isOpen && (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowDown')) {
 			setIsOpen(true);
 			setFilter('');
 			setFilteredOptions(options);
 			setHighlighted(valueIndex === -1 ? null : options[valueIndex].value);
 			ev.preventDefault();
-		} else if(isOpen && ev.key === 'Escape') {
+		} else if (isOpen && ev.key === 'Escape') {
+			inputRef.current.focus();
 			setIsOpen(false);
 			ev.stopPropagation();
-		} else if(isOpen && ev.key === 'ArrowDown') {
+		} else if (!isOpen && ev.key === 'Escape') {
+			setFilter('');
+			setFilteredOptions(options);
+		} else if (isOpen && ev.key === 'ArrowDown') {
 			setKeyboard(true);
-			setHighlighted(mergedOptions[getNextIndex(1)].value);
+			setHighlighted(mergedOptions[getNextIndex(1)]?.value);
 			ev.preventDefault();
-		} else if(isOpen && ev.key === 'ArrowUp') {
+		} else if (isOpen && ev.key === 'ArrowUp') {
 			setKeyboard(true);
-			setHighlighted(mergedOptions[getNextIndex(-1)].value);
+			setHighlighted(mergedOptions[getNextIndex(-1)]?.value);
 			ev.preventDefault();
-		} else if(isOpen && (ev.key === 'Enter' || ev.key === ' ')) {
+		} else if (isOpen && (ev.key === 'Enter' || ev.key === ' ')) {
+			inputRef.current.focus();
 			setIsOpen(false);
-			setIsFocused(false);
 			setFilter('');
 			setFilteredOptions(options);
 
 			const targetOption = mergedOptions.find(mo => mo.value === highlighted);
-			if(targetOption && targetOption.component && targetOption.component.props.onTrigger) {
+			if (targetOption && targetOption.component && targetOption.component.props.onTrigger) {
 				targetOption.component.props.onTrigger(ev);
-			} else if(!targetOption.component && onChange && highlighted && highlighted !== value) {
+			} else if (!targetOption.component && onChange && highlighted && highlighted !== value) {
 				onChange(highlighted);
 			}
 			ev.preventDefault();
@@ -190,15 +207,15 @@ const Select = memo(forwardRef((props, ref) => {
 
 	const handleSearchInput = useCallback(ev => {
 		const newFilter = ev.currentTarget.value;
-		if(newFilter !== filter) {
+		if (newFilter !== filter) {
 			const newOptions = options.filter(o => o.label.toLowerCase().includes(newFilter.toLowerCase()));
 			setFilter(newFilter);
 			setFilteredOptions(newOptions);
-			if(newOptions.length && !newOptions.some(o => o.value === highlighted)) {
+			if (newOptions.length && !newOptions.some(o => o.value === highlighted)) {
 				setHighlighted(newOptions[0].value);
 			}
 		}
-		if(!isOpen) {
+		if (!isOpen) {
 			setIsOpen(true);
 			setFilteredOptions(options);
 			setHighlighted(valueIndex === -1 ? null : options[valueIndex].value);
@@ -206,68 +223,63 @@ const Select = memo(forwardRef((props, ref) => {
 	}, [filter, isOpen, options, highlighted, valueIndex]);
 
 	useEffect(() => {
-		if(!isOpen && wasOpen) {
-			setFilter('');
-			setFilteredOptions(options);
+		if (!isOpen && wasOpen) {
 			setHighlighted(null);
-			if(document.activeElement === inputRef.current) {
-				inputRef.current.blur();
-			}
 		}
-		if(!wasOpen && isOpen) {
+		if (!wasOpen && isOpen) {
 			const highlightedEl = selectRef.current && selectRef.current.querySelector(`[data-option-value="${highlighted}"]`);
-			if(highlightedEl) {
+			if (highlightedEl) {
 				scrollIntoViewIfNeeded(highlightedEl, selectMenuRef.current, false);
 			}
 		}
 	}, [highlighted, isOpen, wasOpen, options, valueIndex, ref]);
 
 	useEffect(() => {
-		if(isOpen && highlighted !== prevHighlighted) {
+		if (isOpen && highlighted !== prevHighlighted) {
 			const highlightedEl = selectRef.current && selectRef.current.querySelector(`[data-option-value="${highlighted}"]`);
-			if(highlightedEl) {
+			if (highlightedEl) {
 				scrollIntoViewIfNeeded(highlightedEl, selectMenuRef.current, false);
 			}
 		}
 	}, [highlighted, prevHighlighted, isOpen]);
 
 	return (
-        <div
+		<div
 			{...pick(rest, p => p.startsWith('data-') || p.startsWith('aria-'))}
-			className={ cx('select-component', className, {
+			className={cx('select-component', className, {
 				'is-searchable': searchable, 'is-focused': isFocused, 'has-value': !!value,
 				'is-keyboard': keyboard, 'is-mouse': !keyboard, 'is-disabled': disabled, 'is-readonly': readOnly
-			}) }
-			id={ id }
-			onBlur={ handleBlur }
-			onClick={ handleClick }
-			onFocus={ handleFocus }
-			onKeyDown={ searchable ? null : handleKeyDown }
-			onMouseMove={ handleMouseMove }
-			ref={ selectRef }
-			tabIndex={ disabled ? null : tabIndex }
-			aria-disabled={ disabled }
-			aria-readonly={ readOnly }
+			})}
+			id={id}
+			onBlur={handleBlur}
+			onClick={handleClick}
+			onFocus={handleFocus}
+			onKeyDown={searchable ? null : handleKeyDown}
+			onMouseMove={handleMouseMove}
+			ref={selectRef}
+			tabIndex={disabled ? null : tabIndex}
+			aria-disabled={disabled}
+			aria-readonly={readOnly}
 			aria-expanded={isOpen}
 			role="combobox"
 		>
 			<div className="select-control">
 				<div className="select-multi-value-wrapper">
 					<div className="select-value">
-					{ (!searchable || !filter.length) && (
-						<span className="select-value-label" role="option">
-							{ valueLabel }
-						</span>
-					) }
+						{(!searchable || !filter.length) && (
+							<span className="select-value-label" role="option">
+								{valueLabel}
+							</span>
+						)}
 					</div>
 					<div className="select-input">
 						<input
-							disabled={ !searchable }
-							onChange={ handleSearchInput }
-							onKeyDown={ searchable ? handleKeyDown : null }
-							ref={ inputRef }
-							tabIndex={ -2 }
-							value={ filter }
+							disabled={!searchable}
+							onChange={handleSearchInput}
+							onKeyDown={searchable ? handleKeyDown : null}
+							ref={inputRef}
+							tabIndex={-2}
+							value={filter}
 						/>
 					</div>
 				</div>
@@ -275,33 +287,33 @@ const Select = memo(forwardRef((props, ref) => {
 					<span className="select-arrow" />
 				</div>
 			</div>
-			{ (isFocused && isOpen) && (
+			{(isFocused && isOpen) && (
 				<div className="select-menu-outer">
 					<div className="select-menu" role="listbox" ref={selectMenuRef}>
-						{ filteredOptions.map(option =>
+						{filteredOptions.map(option =>
 							<SelectOption
-								key={ option.value }
-								highlighted={ highlighted }
-								onMouseDown={ handleItemMouseDown }
-								option={ option }
-								value={ value }
+								key={option.value}
+								highlighted={highlighted}
+								onMouseDown={handleItemMouseDown}
+								option={option}
+								value={value}
 							/>
-						) }
-						{ filteredOptions.length === 0 && (
+						)}
+						{filteredOptions.length === 0 && (
 							<div className="select-noresults">
 								No results found
 							</div>
-						) }
-						{ mapChildren(children, child =>
+						)}
+						{mapChildren(children, child =>
 							child && child.type === SelectOption ?
 								cloneElement(child, { highlighted, value, onMouseDown: handleItemMouseDown }) :
 								child
-						) }
+						)}
 					</div>
 				</div>
-			) }
+			)}
 		</div>
-    );
+	);
 }));
 
 Select.displayName = 'Select';
@@ -316,7 +328,6 @@ Select.propTypes = {
 	onFocus: PropTypes.func,
 	options: PropTypes.array,
 	readOnly: PropTypes.bool,
-	required: PropTypes.bool,
 	searchable: PropTypes.bool,
 	tabIndex: PropTypes.number,
 	value: PropTypes.string,
