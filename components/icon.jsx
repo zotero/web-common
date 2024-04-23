@@ -2,12 +2,13 @@ import { memo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { useForceUpdate } from '../hooks';
+import { pick } from '../utils';
 
 const is2xMQL = typeof(matchMedia) === 'function' ? matchMedia("(min-resolution: 1.5dppx)") : { matches: false };
 const isDarkMQL = typeof(matchMedia) === 'function' ? matchMedia('(prefers-color-scheme: dark)') : { matches: false };
 
 export const Icon = memo(props => {
-	const { className, color, height, label, role = 'img', type, viewBox, width, usePixelRatio, useThemeColors } = props;
+	const { className, color, height, label, role = 'img', type, viewBox, width, usePixelRatio, useThemeColors, ...rest } = props;
 	const style = { color, ...props.style };
 	const basename = type.split(/[\\/]/).pop();
 	const pixelRatio = usePixelRatio ? is2xMQL.matches ? '@2x' : '@1x' : '';
@@ -60,7 +61,11 @@ export const Icon = memo(props => {
 	}, [forceUpdate, useThemeColors]);
 
 	return (
-		<svg { ...svgAttr } viewBox={ viewBox }>
+		<svg
+			{ ...svgAttr }
+			viewBox={ viewBox }
+			{...pick(rest, p => p.startsWith('data-'))}
+		>
 			<use xlinkHref={`/static/icons/${type}${pixelRatio}.svg#${symbol}`} />
 		</svg>
 	);
