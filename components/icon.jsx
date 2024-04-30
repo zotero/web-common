@@ -8,7 +8,7 @@ const is2xMQL = typeof(matchMedia) === 'function' ? matchMedia("(min-resolution:
 const isDarkMQL = typeof(matchMedia) === 'function' ? matchMedia('(prefers-color-scheme: dark)') : { matches: false };
 
 export const Icon = memo(props => {
-	const { className, color, height, label, role = 'img', type, viewBox, width, usePixelRatio, useThemeColors, ...rest } = props;
+	const { className, color, colorScheme = null, height, label, role = 'img', type, viewBox, width, usePixelRatio, useColorScheme, ...rest } = props;
 	const style = { color, ...props.style };
 	const basename = type.split(/[\\/]/).pop();
 	const pixelRatio = usePixelRatio ? is2xMQL.matches ? '@2x' : '@1x' : '';
@@ -16,8 +16,12 @@ export const Icon = memo(props => {
 
 	let symbol = props.symbol || basename;
 
-	if (useThemeColors) {
-		symbol += isDarkMQL.matches ? '-dark' : '-light';
+	if (useColorScheme) {
+		if (colorScheme) {
+			symbol += `-${colorScheme}`;
+		} else {
+			symbol += isDarkMQL.matches ? '-dark' : '-light';
+		}
 	}
 
 	const svgAttr = {
@@ -52,13 +56,13 @@ export const Icon = memo(props => {
 	}, [forceUpdate, usePixelRatio]);
 
 	useEffect(() => {
-		if(useThemeColors) {
+		if(useColorScheme) {
 			isDarkMQL.addEventListener('change', forceUpdate);
 			return () => {
 				isDarkMQL.removeEventListener('change', forceUpdate);
 			};
 		}
-	}, [forceUpdate, useThemeColors]);
+	}, [forceUpdate, useColorScheme]);
 
 	return (
 		<svg
@@ -76,6 +80,7 @@ Icon.displayName = 'Icon';
 Icon.propTypes = {
 	className: PropTypes.string,
 	color: PropTypes.string,
+	colorScheme: PropTypes.string,
 	height: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
 	label: PropTypes.string,
 	role: PropTypes.string,
@@ -83,7 +88,7 @@ Icon.propTypes = {
 	symbol: PropTypes.string,
 	type: PropTypes.string.isRequired,
 	usePixelRatio: PropTypes.bool,
-	useThemeColors: PropTypes.bool,
+	useColorScheme: PropTypes.bool,
 	viewBox: PropTypes.string,
 	width: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
 };
