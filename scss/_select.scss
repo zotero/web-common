@@ -124,22 +124,25 @@
 
 	.select-option {
 		cursor: pointer;
-		color: $text-color;
+		color: $menu-color;
 
 		// is-mouse and is-keyboard are mutex in .select-component
 		&:hover {
 			@include state(".select-component.is-mouse") {
+				color: $menu-item-hover-color;
 				background-color: $menu-item-hover-bg;
 			}
 		}
 
 		&.is-focused:not(.is-selected) {
 			@include state(".select-component.is-keyboard") {
+				color: $menu-item-hover-color;
 				background-color: $menu-item-hover-bg;
 			}
 		}
 
 		&.is-selected {
+			color: $menu-item-selected-color;
 			background-color: $menu-item-selected-bg;
 		}
 	}
@@ -150,5 +153,6 @@
 
 	.select-noresults {
 		color: $menu-no-results-color;
+		background-color: $menu-no-results-bg;
 	}
 }

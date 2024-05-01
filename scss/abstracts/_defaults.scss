@@ -33,15 +33,19 @@ $shade-10: #000 !default;
 
 $body-bg: $shade-0 !default;
 $text-color: $shade-9 !default;
+
 $menu-color: $text-color !default;
 $menu-color-disabled: #9a9a9a !default;
 $menu-bg: $body-bg !default;
 $menu-box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 3px 8px rgba(0, 0, 0, 0.2) !default;
+$menu-item-hover-color: $text-color !default;
 $menu-item-hover-bg: #e6e6e6 !default;
+$menu-item-selected-color: $text-color !default;
 $menu-item-selected-bg: $shade-2 !default;
 $menu-item-selected-hover-bg: $shade-3 !default;
 $menu-devider: $shade-2 !default;
 $menu-no-results-color: $shade-5 !default;
+$menu-no-results-bg: transparent !default;
 
 $space-min: 4px !default;
 $space-xs: 8px !default;
