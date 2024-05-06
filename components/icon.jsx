@@ -2,10 +2,26 @@ import { memo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { useForceUpdate } from '../hooks';
-import { pick } from '../utils';
+import { pick, noop } from '../utils';
 
 const is2xMQL = typeof(matchMedia) === 'function' ? matchMedia("(min-resolution: 1.5dppx)") : { matches: false };
 const isDarkMQL = typeof(matchMedia) === 'function' ? matchMedia('(prefers-color-scheme: dark)') : { matches: false };
+
+const addListener = (mql, listener) => {
+	if(mql.addEventListener) {
+		mql.addEventListener('change', listener);
+	} else {
+		mql.addListener(listener);
+	}
+}
+
+const removeListener = (mql, listener) => {
+	if(mql.removeEventListener) {
+		mql.removeEventListener('change', listener);
+	} else {
+		mql.removeListener(listener);
+	}
+}
 
 export const Icon = memo(props => {
 	const { className, color, colorScheme = null, height, label, role = 'img', type, viewBox, width, usePixelRatio, useColorScheme, ...rest } = props;
@@ -48,18 +64,18 @@ export const Icon = memo(props => {
 
 	useEffect(() => {
 		if(usePixelRatio) {
-			is2xMQL.addEventListener('change', forceUpdate);
+			addListener(is2xMQL, forceUpdate);
 			return () => {
-				is2xMQL.removeEventListener('change', forceUpdate);
+				removeListener(is2xMQL, forceUpdate);
 			};
 		}
 	}, [forceUpdate, usePixelRatio]);
 
 	useEffect(() => {
 		if(useColorScheme) {
-			isDarkMQL.addEventListener('change', forceUpdate);
+			addListener(isDarkMQL, forceUpdate);
 			return () => {
-				isDarkMQL.removeEventListener('change', forceUpdate);
+				removeListener(isDarkMQL, forceUpdate);
 			};
 		}
 	}, [forceUpdate, useColorScheme]);
