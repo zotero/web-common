@@ -1,8 +1,8 @@
-import { memo, useEffect } from 'react';
+import { memo, forwardRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { useForceUpdate } from '../hooks';
-import { pick, noop } from '../utils';
+import { pick } from '../utils';
 
 const is2xMQL = typeof(matchMedia) === 'function' ? matchMedia("(min-resolution: 1.5dppx)") : { matches: false };
 const isDarkMQL = typeof(matchMedia) === 'function' ? matchMedia('(prefers-color-scheme: dark)') : { matches: false };
@@ -23,7 +23,7 @@ const removeListener = (mql, listener) => {
 	}
 }
 
-export const Icon = memo(props => {
+export const Icon = memo(forwardRef((props, ref) => {
 	const { className, color, colorScheme = null, height, label, role = 'img', type, viewBox, width, usePixelRatio, useColorScheme, ...rest } = props;
 	const style = { color, ...props.style };
 	const basename = type.split(/[\\/]/).pop();
@@ -82,6 +82,7 @@ export const Icon = memo(props => {
 
 	return (
 		<svg
+			ref={ref}
 			{ ...svgAttr }
 			viewBox={ viewBox }
 			{...pick(rest, p => p.startsWith('data-'))}
@@ -89,7 +90,7 @@ export const Icon = memo(props => {
 			<use xlinkHref={`/static/icons/${type}${pixelRatio}.svg#${symbol}`} />
 		</svg>
 	);
-});
+}));
 
 Icon.displayName = 'Icon';
 
