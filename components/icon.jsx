@@ -10,7 +10,7 @@ const isDarkMQL = typeof(matchMedia) === 'function' ? matchMedia('(prefers-color
 const addListener = (mql, listener) => {
 	if(mql.addEventListener) {
 		mql.addEventListener('change', listener);
-	} else {
+	} else if(mql.addListener) {
 		mql.addListener(listener);
 	}
 }
@@ -18,7 +18,7 @@ const addListener = (mql, listener) => {
 const removeListener = (mql, listener) => {
 	if(mql.removeEventListener) {
 		mql.removeEventListener('change', listener);
-	} else {
+	} else if (mql.removeListener) {
 		mql.removeListener(listener);
 	}
 }
