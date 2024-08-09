@@ -11,30 +11,30 @@
 }
 
 .icon-spin {
-	@keyframes spin {
-		0% {
-			transform: rotate(0deg);
-		}
-
-		100% {
-			transform: rotate(360deg);
-		}
-	}
-
-	@keyframes spin-centered {
-		0% {
-			transform: translate(-50%, -50%) rotate(0deg);
-		}
-
-		100% {
-			transform: translate(-50%, -50%) rotate(360deg);
-		}
-	}
-
 	display: block; // todo
 	width: $icon-spin-size-md;
 	height: $icon-spin-size-md;
 	animation: spin 1s linear infinite;
+
+	@keyframes spin {
+			0% {
+				transform: rotate(0deg);
+			}
+
+			100% {
+				transform: rotate(360deg);
+			}
+		}
+
+		@keyframes spin-centered {
+			0% {
+				transform: translate(-50%, -50%) rotate(0deg);
+			}
+
+			100% {
+				transform: translate(-50%, -50%) rotate(360deg);
+			}
+		}
 
 	@include mouse-and-bp-up(md) {
 		color: $spinner-color;
