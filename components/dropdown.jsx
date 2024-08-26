@@ -248,12 +248,15 @@ DropdownMenu.propTypes = {
 
 export const DropdownItem = memo(props => {
 	const ref = useRef(null);
-	const { children, className, onClick, role = 'menuitem', tag, divider, ...rest } = props;
+	const { children, className, onClick, disabled = false, role = 'menuitem', tag, divider, ...rest } = props;
 	const Tag = tag ?? (divider ? 'div' : 'button');
 
 	const { handleToggle } = useContext(DropdownContext);
 
 	const handleKeyDown = useCallback(ev => {
+		if (disabled) {
+			return;
+		}
 		// onKeyDown?.(ev);
 
 		if (ev.key === ' ' || ev.key === 'Enter') {
@@ -269,23 +272,28 @@ export const DropdownItem = memo(props => {
 			}
 			ev.preventDefault();
 		}
-	}, [handleToggle, onClick, tag]);
+	}, [disabled, handleToggle, onClick, tag]);
 
 	const handleClick = useCallback(ev => {
+		if (disabled) {
+			return;
+		}
 		onClick?.(ev);
 		if (!ev.defaultPrevented) {
 			// make sure default behaviour such as clicking a link runs first, then close the dropdown
 			setTimeout(() => handleToggle(ev), 0);
 		}
-	}, [handleToggle, onClick]);
+	}, [disabled, handleToggle, onClick]);
 
 	return (
 		<Tag
 			{...rest}
 			className={cx(className, {
+				'disabled': disabled,
 				'dropdown-item': !divider,
 				'dropdown-divider': divider,
 			})}
+			disabled={ Tag === 'button' ? disabled : null }
 			onClick={ handleClick }
 			onKeyDown={ handleKeyDown }
 			tabIndex={divider ? null : -2}
@@ -300,6 +308,7 @@ export const DropdownItem = memo(props => {
 DropdownItem.displayName = 'DropdownItem';
 
 DropdownItem.propTypes = {
+	disabled: PropTypes.bool,
 	divider: PropTypes.bool,
 	role: PropTypes.string,
     children: PropTypes.node,

@@ -16,4 +16,19 @@ describe('Dropdown', () => {
             </Dropdown>
         );
     })
+
+	test('Not trigger onClick if dropdown item is disabled', async () => {
+		const onClick = jest.fn();
+		const { getByText } = render(
+			<Dropdown>
+				<DropdownToggle></DropdownToggle>
+				<DropdownMenu>
+					<DropdownItem onClick={onClick} disabled>Disabled</DropdownItem>
+				</DropdownMenu>
+			</Dropdown>
+		);
+
+		getByText('Disabled').click();
+		expect(onClick).not.toHaveBeenCalled();
+	});
 });
