@@ -166,8 +166,8 @@ const useFocusManager = (ref, initialQuerySelector = null, isCarousel = true, is
 					// eslint-disable-next-line react-hooks/exhaustive-deps
 					initialQuerySelector = [initialQuerySelector];
 				}
-				while (initialQuerySelector.length) {
-					const nextSelector = initialQuerySelector.shift();
+				for (let i = 0; i < initialQuerySelector.length; i++) {
+					const nextSelector = initialQuerySelector[i];
 					const candidate = ref.current.querySelector(nextSelector);
 					if(candidate) {
 						lastFocused.current = candidate;
