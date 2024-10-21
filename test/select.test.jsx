@@ -133,22 +133,32 @@ describe('Select', () => {
 		await user.keyboard('{Escape}');
 		expect(screen.getByRole('textbox')).toHaveValue('');
 	});
+
 	test('Should ignore user input if select is disabled', async () => {
 		const user = userEvent.setup();
-		render(<Select disabled options={options} />);
+		render(<Select searchable disabled options={options} />);
 		await user.click(screen.getByRole('combobox'));
 		expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
 		await user.type(screen.getByRole('combobox'), 'lorem');
 		expect(screen.getByRole('textbox')).toHaveValue('');
 	});
+
 	test('Should ignore user input if select is readOnly', async () => {
 		const user = userEvent.setup();
-		render(<Select readOnly options={options} />);
+		render(<Select searchable readOnly options={options} />);
 		await user.click(screen.getByRole('combobox'));
 		expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
 		await user.type(screen.getByRole('combobox'), 'lorem');
 		expect(screen.getByRole('textbox')).toHaveValue('');
 	});
+
+	test('Should omit rendering an input field if not marked as searchable', async () => {
+		const user = userEvent.setup();
+		render(<Select options={options} />);
+		await user.click(screen.getByRole('combobox'));
+		expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+	});
+
 	test('Should skip over SelectDivider when using keyboard nav', async () => {
 		const user = userEvent.setup();
 		const onTrigger = jest.fn();

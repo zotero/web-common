@@ -1,5 +1,5 @@
 import {
-	cloneElement, forwardRef, memo, useCallback, useImperativeHandle, useRef, useReducer, useEffect, useMemo,
+	cloneElement, forwardRef, memo, useCallback, useImperativeHandle, useRef, useReducer, useEffect, useMemo, useId
 } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
@@ -71,9 +71,11 @@ const selectReducer = (state, action) => {
 };
 
 const Select = memo(forwardRef((props, ref) => {
-	const { children, className, disabled, id, onBlur, onChange, onFocus, options, readOnly, searchable,
+	const { children, className, disabled, onBlur, onChange, onFocus, options, readOnly, searchable,
 		tabIndex = 0, value, ...rest } = props;
 
+	const fallbackID = useId();
+	const id = rest.id || `select-${fallbackID}`;
 	const valueLabel = useMemo(() => (options.find(o => o.value === value) || (value !== null ? { label: value } : false) || options[0] || {}).label, [options, value]);
 	const valueIndex = useMemo(() => options.findIndex(o => o.value === value), [options, value]);
 	const [state, dispatchState] = useReducer(selectReducer, {
@@ -112,7 +114,7 @@ const Select = memo(forwardRef((props, ref) => {
 			dispatchState({ type: 'focus' });
 			if (searchable) {
 				selectRef.current.tabIndex = -2;
-				inputRef.current.focus();
+				inputRef.current?.focus();
 			}
 			onFocus?.(ev);
 		}
@@ -188,7 +190,7 @@ const Select = memo(forwardRef((props, ref) => {
 			dispatchState({ type: 'open', value: valueIndex === -1 ? null : options[valueIndex].value });
 			ev.preventDefault();
 		} else if (state.isOpen && ev.key === 'Escape') {
-			inputRef.current.focus();
+			inputRef.current?.focus();
 			dispatchState({ type: 'close' });
 			ev.stopPropagation();
 		} else if (!state.isOpen && ev.key === 'Escape') {
@@ -200,7 +202,7 @@ const Select = memo(forwardRef((props, ref) => {
 			dispatchState({ type: 'highlight', value: mergedOptions[getNextIndex(-1)]?.value });
 			ev.preventDefault();
 		} else if (state.isOpen && (ev.key === 'Enter' || ev.key === ' ')) {
-			inputRef.current.focus();
+			inputRef.current?.focus();
 			dispatchState({ type: 'select', options });
 			const targetOption = mergedOptions.find(mo => mo.value === state.highlighted);
 			if (targetOption && targetOption.component && targetOption.component.props.onTrigger) {
@@ -268,21 +270,21 @@ const Select = memo(forwardRef((props, ref) => {
 				<div className="select-multi-value-wrapper">
 					<div className="select-value">
 						{(!searchable || !state.filter.length) && (
-							<span className="select-value-label" role="option">
+							<span className="select-value-label" >
 								{valueLabel}
 							</span>
 						)}
 					</div>
-					<div className="select-input">
-						<input
-							disabled={!searchable}
-							onChange={handleSearchInput}
-							onKeyDown={searchable ? handleKeyDown : null}
-							ref={inputRef}
-							tabIndex={-2}
-							value={state.filter}
-						/>
-					</div>
+					{searchable && <div className="select-input">
+							<input
+								aria-controls={`${id}-menu`}
+								onChange={handleSearchInput}
+								onKeyDown={searchable ? handleKeyDown : null}
+								ref={inputRef}
+								tabIndex={-2}
+								value={state.filter}
+							/>
+					</div> }
 				</div>
 				<div className="select-arrow-container">
 					<span className="select-arrow" />
@@ -290,7 +292,7 @@ const Select = memo(forwardRef((props, ref) => {
 			</div>
 			{(state.isFocused && state.isOpen) && (
 				<div className="select-menu-outer">
-					<div className="select-menu" role="listbox" ref={selectMenuRef}>
+					<div className="select-menu" role="listbox" ref={selectMenuRef} id={`${id}-menu`}>
 						{state.filteredOptions.map(option =>
 							<SelectOption
 								key={option.value}
