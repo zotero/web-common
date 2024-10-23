@@ -41,24 +41,21 @@ const Tab = memo(props => {
 	}, [resetLastFocused, isDisabled, onActivate]);
 
 	return (
-		<li
+		<button
+			role={asSections ? null : 'tab'}
 			className={cx({
 				tab: true,
 				active: isActive,
 				disabled: isDisabled
 			})}
+			{...pick(rest, p => p.startsWith('data-') || p.startsWith('aria-'))}
+			onClick={handleClick}
+			onKeyDown={handleKeyDown}
+			aria-selected={isActive}
+			tabIndex={-2}
 		>
-			<button
-				{...pick(rest, p => p.startsWith('data-') || p.startsWith('aria-'))}
-				onClick={handleClick}
-				onKeyDown={handleKeyDown}
-				role={asSections ? null : 'tab'}
-				aria-selected={isActive}
-				tabIndex={-2}
-			>
-				{children}
-			</button>
-		</li>
+			{children}
+		</button>
 	);
 });
 
@@ -84,7 +81,7 @@ const Tabs = memo(({ asSections, children, justified, compact, activateOnFocus, 
 
 	return (
 		<nav>
-			<ul
+			<div
 				className={cx('nav', 'tabs', { justified, compact, 'activate-on-focus': activateOnFocus })}
 				onBlur={asSections ? noop : receiveBlur}
 				onFocus={asSections ? noop : receiveFocus}
@@ -100,7 +97,7 @@ const Tabs = memo(({ asSections, children, justified, compact, activateOnFocus, 
 							child
 					)
 				}
-			</ul>
+			</div>
 		</nav>
 	);
 });
