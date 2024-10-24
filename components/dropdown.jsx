@@ -185,7 +185,7 @@ export const DropdownMenu = memo(props => {
 	const ref = useRef(null);
 
 	const { isOpen, x, y, isReady, strategy, refs, handleToggle } = useContext(DropdownContext);
-	const { focusNext, focusPrev, receiveBlur, receiveFocus, resetLastFocused } = useFocusManager(ref, '[role="menuitem"]');
+	const { focusNext, focusPrev, receiveBlur, receiveFocus, resetLastFocused } = useFocusManager(ref, { initialQuerySelector: '[role="menuitem"]' });
 	const wasOpen = usePrevious(isOpen);
 
 	const handleKeyDown = useCallback(ev => {

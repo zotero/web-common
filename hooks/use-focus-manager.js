@@ -4,15 +4,64 @@ const isModifierKey = ev => ev.getModifierState("Meta") || ev.getModifierState("
 		ev.getModifierState("Control") || ev.getModifierState("OS");
 
 
-const useFocusManager = (ref, initialQuerySelector = null, isCarousel = true, isDrillDownCarousel = false) => {
+/**
+ * React hook to manage focus within a component. Useful for managing focus within lists, toolbars, etc.
+ * Both receiveFocus and receiveBlur must be installed on the container element. When the container element
+ * receives focus, it will move focus to the first viable candidate, identified either by the tabIndex value
+ * or by the initialQuerySelector, except if isFocusable is set to true. In that case, the container itself
+ * will be focused and the first call to focusNext will move focus to the first viable candidate.
+ * FocusManager remembers the last focused element within the container and will move focus to that element
+ * when focus is received again.
+ *
+ * @param {Object} ref - React ref object pointing to the focusable container.
+ * @param {Object} [options] - Configuration options.
+ * @param {string|null} [options.initialQuerySelector=null] - Initial query selector to focus on.
+ * @param {boolean} [options.isCarousel=true] - Whether the focus should loop around. If isFocusable is true, carousel works forward only.
+ * @param {number} [options.targetTabIndex=-2] - The tabIndex value to target for focusable elements.
+ * @param {boolean} [options.isFocusable=false] - Whether the container itself is focusable.
+ *
+ * @returns {Object} - An object containing focus management functions.
+ * @returns {Function} return.receiveFocus - Function to handle focus event.
+ * @returns {Function} return.receiveBlur - Function to handle blur event.
+ * @returns {Function} return.focusNext - Function to focus the next element.
+ * @returns {Function} return.focusPrev - Function to focus the previous element.
+ * @returns {Function} return.focusBySelector - Function to focus an element by selector or element.
+ * @returns {Function} return.resetLastFocused - Function to reset the stored reference to the last focused element.
+ * @returns {Function} return.registerAutoFocus - Function to register an element for auto focus.
+ * @returns {Function} return.focusOnLast - Function to focus on the last focused element. Both the node and the index within candidates are stored.
+ * 											If the node is not found, the index is used to find the node.
+ */
+const useFocusManager = (ref, { initialQuerySelector = null, isCarousel = true, targetTabIndex = -2, isFocusable = false } = {}) => {
 	const isFocused = useRef(false);
 	const lastFocused = useRef(null);
+	const lastFocusedIndex = useRef(null);
 	const originalTabIndex = useRef(null);
 
-	const focusNext = useCallback((ev, { useCurrentTarget = true, targetEnd = null, offset = 1 } = {}) => {
-		const tabbables = Array.from(
-			ref.current.querySelectorAll('[tabIndex="-2"]:not([disabled]):not(.offscreen)')
+	const getTabbables = useCallback(() => {
+		return Array.from(
+			ref.current.querySelectorAll(`[tabIndex="${targetTabIndex}"]:not([disabled]):not(.offscreen)`)
 		).filter(t => t.offsetParent);
+	}, [ref, targetTabIndex]);
+
+	const storeLastFocused = useCallback((element) => {
+		lastFocused.current = element;
+
+		if (!(element instanceof Element)) {
+			lastFocusedIndex.current = null;
+			return;
+		}
+
+		if(ref.current === null) {
+			return;
+		}
+
+		const tabbables = getTabbables();
+		const index = tabbables.indexOf(element);
+		lastFocusedIndex.current = index >= 0 ? index : null;
+	}, [getTabbables, ref]);
+
+	const focusNext = useCallback((ev, { useCurrentTarget = true, targetEnd = null, offset = 1 } = {}) => {
+		const tabbables = getTabbables();
 		if(tabbables.length === 0) {
 			return;
 		}
@@ -26,24 +75,22 @@ const useFocusManager = (ref, initialQuerySelector = null, isCarousel = true, is
 		ev.preventDefault();
 		if(nextIndex < tabbables.length) {
 			tabbables[nextIndex].focus();
-			lastFocused.current = tabbables[nextIndex];
+			storeLastFocused(tabbables[nextIndex]);
 		} else if (targetEnd !== null) {
 			targetEnd.focus();
-			lastFocused.current = null;
+			storeLastFocused(null);
 		} else if(isCarousel) {
 			tabbables[0].focus();
-			lastFocused.current = tabbables[0];
+			storeLastFocused(tabbables[0]);
 		} else {
 			tabbables[tabbables.length - 1].focus();
-			lastFocused.current = tabbables[tabbables.length - 1];
+			storeLastFocused(tabbables[tabbables.length - 1]);
 		}
 		return lastFocused.current;
-	}, [ref, isCarousel]);
+	}, [getTabbables, isCarousel, storeLastFocused]);
 
 	const focusPrev = useCallback((ev, { useCurrentTarget = true, targetEnd = null, offset = 1 } = {}) => {
-		const tabbables = Array.from(
-			ref.current.querySelectorAll('[tabIndex="-2"]:not([disabled]):not(.offscreen)')
-		).filter(t => t.offsetParent);
+		const tabbables = getTabbables();
 		if(tabbables.length === 0) {
 			return;
 		}
@@ -56,57 +103,22 @@ const useFocusManager = (ref, initialQuerySelector = null, isCarousel = true, is
 		ev.preventDefault();
 		if(prevIndex >= 0) {
 			tabbables[prevIndex].focus();
-			lastFocused.current = tabbables[prevIndex];
+			storeLastFocused(tabbables[prevIndex]);
 		} else if (targetEnd !== null) {
 			targetEnd.focus();
-			lastFocused.current = null;
-		} else if(isCarousel) {
+			storeLastFocused(null);
+		} else if(isFocusable) {
+			ref.current.focus();
+			storeLastFocused(null);
+		}else if(isCarousel) {
 			tabbables[tabbables.length - 1].focus();
-			lastFocused.current = tabbables[tabbables.length - 1];
+			storeLastFocused(tabbables[tabbables.length - 1]);
 		} else {
 			tabbables[0].focus();
-			lastFocused.current = tabbables[0];
+			storeLastFocused(tabbables[0]);
 		}
 		return lastFocused.current;
-	}, [ref, isCarousel]);
-
-	const focusDrillDownNext = useCallback((ev, offset = 1) => {
-		const drillables = Array.from(
-			ev.currentTarget.querySelectorAll('[tabIndex="-3"]:not([disabled])')
-		).filter(t => t.offsetParent);
-		if(drillables.length === 0 ) {
-			return;
-		}
-		const nextIndex = drillables.findIndex(t => t === ev.target) + offset;
-		if(nextIndex < drillables.length) {
-			drillables[nextIndex].focus();
-		} else {
-			if(isDrillDownCarousel) {
-				drillables[0].focus();
-			} else {
-				drillables[drillables.length - 1].focus();
-			}
-		}
-	}, [isDrillDownCarousel]);
-
-	const focusDrillDownPrev = useCallback((ev, offset = 1) => {
-		const drillables = Array.from(
-			ev.currentTarget.querySelectorAll('[tabIndex="-3"]:not([disabled])')
-		).filter(t => t.offsetParent);
-		if(drillables.length === 0 ) {
-			return;
-		}
-		const prevIndex = drillables.findIndex(t => t === ev.target) - offset;
-		if(prevIndex >= 0) {
-			drillables[prevIndex].focus();
-		} else {
-			if(isDrillDownCarousel) {
-				drillables[drillables.length - 1].focus();
-			} else {
-				ev.currentTarget.focus();
-			}
-		}
-	}, [isDrillDownCarousel]);
+	}, [getTabbables, isFocusable, isCarousel, storeLastFocused, ref]);
 
 	const focusBySelector = useCallback(selectorOrEl => {
 		const nextEl = typeof(selectorOrEl) === 'string' ?
@@ -114,20 +126,28 @@ const useFocusManager = (ref, initialQuerySelector = null, isCarousel = true, is
 			selectorOrEl;
 
 		if(nextEl) {
-			lastFocused.current = nextEl;
+			storeLastFocused(nextEl);
 			nextEl.focus();
 		}
-	}, [ref]);
+	}, [ref, storeLastFocused]);
 
 	const focusOnLast  = useCallback(() => {
 		if(lastFocused.current) {
-			lastFocused.current.focus();
+			if(document.body.contains(lastFocused.current)) {
+				lastFocused.current.focus();
+			} else if(lastFocusedIndex.current !== null) {
+				const tabbables = getTabbables();
+				if (tabbables[lastFocusedIndex.current]) {
+					tabbables[lastFocusedIndex.current].focus();
+					storeLastFocused(tabbables[lastFocusedIndex.current]);
+				}
+			}
 		}
-	}, []);
+	}, [getTabbables, storeLastFocused]);
 
 	const resetLastFocused = useCallback(() => {
-		lastFocused.current = null;
-	}, []);
+		storeLastFocused(null);
+	}, [storeLastFocused]);
 
 	const receiveFocus = useCallback((ev, isBounced = false) => {
 		ev.stopPropagation();
@@ -154,12 +174,18 @@ const useFocusManager = (ref, initialQuerySelector = null, isCarousel = true, is
 		}
 
 		isFocused.current = true;
-		ref.current.tabIndex = -1;
+		if(ref.current.tabIndex >= 0) {
+			ref.current.tabIndex = -1;
+		}
+
+		if (isFocusable) {
+			return;
+		}
 
 		if(lastFocused.current === null && initialQuerySelector !== null) {
 			if(typeof(initialQuerySelector) === 'object' && initialQuerySelector.current && 'focus' in initialQuerySelector.current) {
 				// pased as a ref
-				lastFocused.current = initialQuerySelector.current;
+				storeLastFocused(initialQuerySelector.current);
 			} else if (Array.isArray(initialQuerySelector) || typeof(initialQuerySelector) === 'string') {
 				//passed as a string or array of strings
 				if(!Array.isArray(initialQuerySelector)) {
@@ -170,7 +196,7 @@ const useFocusManager = (ref, initialQuerySelector = null, isCarousel = true, is
 					const nextSelector = initialQuerySelector[i];
 					const candidate = ref.current.querySelector(nextSelector);
 					if(candidate) {
-						lastFocused.current = candidate;
+						storeLastFocused(candidate);
 						break;
 					}
 				}
@@ -182,7 +208,7 @@ const useFocusManager = (ref, initialQuerySelector = null, isCarousel = true, is
 			}
 		}
 
-		const candidates = Array.from(ref.current.querySelectorAll('[tabIndex="-2"]:not([disabled])'));
+		const candidates = Array.from(ref.current.querySelectorAll(`[tabIndex="${targetTabIndex}"]:not([disabled])`));
 		if(lastFocused.current !== null && candidates.includes(lastFocused.current)) {
 			lastFocused.current.focus();
 			return true;
@@ -196,12 +222,11 @@ const useFocusManager = (ref, initialQuerySelector = null, isCarousel = true, is
 	}, [ref, initialQuerySelector]);
 
 	const receiveBlur = useCallback(ev => {
-		if(ev.relatedTarget &&
-			(ev.relatedTarget === ref.current || (
-			!ev?.relatedTarget?.dataFocusRoot && ev?.relatedTarget?.closest?.('[data-focus-root]') === ref.current))
-		) {
+		// ignore blurs to self and descendants
+		if(ev.relatedTarget && (ev.relatedTarget === ref.current || ref.current.contains(ev.relatedTarget))) {
 			return false;
 		}
+
 		isFocused.current = false;
 		ev.currentTarget.tabIndex = originalTabIndex.current;
 		return true;
@@ -213,13 +238,13 @@ const useFocusManager = (ref, initialQuerySelector = null, isCarousel = true, is
 		}
 
 		if(ref instanceof Element) {
-			lastFocused.current = ref;
+			storeLastFocused(ref);
 		}
-	}, []);
+	}, [storeLastFocused]);
 
 	const focusManagerFunctions = useMemo(() => (
-		{ receiveFocus, receiveBlur, focusNext, focusPrev, focusBySelector, focusDrillDownNext, focusDrillDownPrev, resetLastFocused, registerAutoFocus, focusOnLast }),
-		[receiveFocus, receiveBlur, focusNext, focusPrev, focusBySelector, focusDrillDownNext, focusDrillDownPrev, resetLastFocused, registerAutoFocus, focusOnLast]
+		{ receiveFocus, receiveBlur, focusNext, focusPrev, focusBySelector, resetLastFocused, registerAutoFocus, focusOnLast }),
+		[receiveFocus, receiveBlur, focusNext, focusPrev, focusBySelector, resetLastFocused, registerAutoFocus, focusOnLast]
 	);
 
 	return focusManagerFunctions;

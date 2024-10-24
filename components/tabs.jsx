@@ -77,7 +77,7 @@ Tab.propTypes = {
 const Tabs = memo(({ asSections, children, justified, compact, activateOnFocus, ...rest }) => {
 	const ref = useRef(null);
 	const { focusNext, focusPrev, receiveFocus, receiveBlur, resetLastFocused } =
-		useFocusManager(ref, '.tab.active > button');
+		useFocusManager(ref, { initialQuerySelector: '.tab.active' });
 
 	return (
 		<nav>
