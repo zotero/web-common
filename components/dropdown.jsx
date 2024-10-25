@@ -160,7 +160,7 @@ export const DropdownToggle = memo(forwardRef((props, ref) => {
 			className={ className }
 			onClick={ handleClick }
 			onKeyDown={ handleKeyDown }
-			ref={ r => { refs.setReference?.(r); ref?.(r) } }
+			ref={r => { refs.setReference?.(r); ref instanceof Function ? ref(r) : ref ? ref.current = r : null } }
 			tabIndex={ tabIndex }
 		>
 			{props.children}
