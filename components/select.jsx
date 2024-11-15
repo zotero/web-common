@@ -3,6 +3,7 @@ import {
 } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
+import deepEqual from 'deep-equal';
 
 import { flattenChildren, mapChildren } from '../utils/react';
 import { pick } from '../utils/immutable';
@@ -78,6 +79,8 @@ const Select = memo(forwardRef((props, ref) => {
 	const id = rest.id || `select-${fallbackID}`;
 	const valueLabel = useMemo(() => (options.find(o => o.value === value) || (value !== null ? { label: value } : false) || options[0] || {}).label, [options, value]);
 	const valueIndex = useMemo(() => options.findIndex(o => o.value === value), [options, value]);
+	const prevOptions = usePrevious(options);
+
 	const [state, dispatchState] = useReducer(selectReducer, {
 		isOpen: false,
 		isFocused: false,
@@ -245,6 +248,16 @@ const Select = memo(forwardRef((props, ref) => {
 			}
 		}
 	}, [prevHighlighted, state.highlighted, state.isOpen]);
+
+	useEffect(() => {
+		if(typeof(prevOptions) !== 'undefined' && !deepEqual(options, prevOptions)) {
+			if(state.filter.length) {
+				dispatchState({ type: 'filter', value: state.filter, options });
+			} else {
+				dispatchState({ type: 'filter-clear', options });
+			}
+		}
+	}, [options, prevOptions, state.filter]);
 
 	return (
 		<div

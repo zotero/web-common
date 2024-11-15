@@ -174,4 +174,57 @@ describe('Select', () => {
 		await user.keyboard('{enter}');
 		expect(onTrigger).toHaveBeenCalledTimes(1);
 	});
+
+	test('It should update options when re-rendering with a different options array', async () => {
+		const user = userEvent.setup();
+		const newOptions = [
+			{ label: 'Foo', value: 'foo' },
+			{ label: 'Bar', value: 'bar' },
+			{ label: 'Lorem', value: 'lorem' },
+		];
+		const { rerender } = render(<Select options={options} />);
+		await user.click(screen.getByRole('combobox'));
+		expect(getAllByRole(screen.getByRole('listbox'), 'option')).toHaveLength(options.length);
+
+		rerender(<Select options={newOptions} />);
+		expect(getAllByRole(screen.getByRole('listbox'), 'option')).toHaveLength(newOptions.length);
+	});
+
+	test('It should updade options when re-rendering with different children', async () => {
+		const user = userEvent.setup();
+		const { rerender } = render(
+			<Select options={ options }>
+				<SelectOption option={{ label: 'Bonus', value: 'bonus' }} />
+			</Select>
+		);
+		await user.click(screen.getByRole('combobox'));
+		expect(getAllByRole(screen.getByRole('listbox'), 'option')).toHaveLength(options.length + 1);
+		expect(getAllByRole(screen.getByRole('listbox'), 'option')[options.length]).toHaveTextContent('Bonus');
+
+		rerender(
+			<Select options={options}>
+				<SelectOption option={{ label: 'Bonus', value: 'bonus' }} />
+				<SelectOption option={{ label: 'Extra', value: 'extra' }} />
+			</Select>
+		);
+		expect(getAllByRole(screen.getByRole('listbox'), 'option')).toHaveLength(options.length + 2);
+		expect(getAllByRole(screen.getByRole('listbox'), 'option')[options.length + 1]).toHaveTextContent('Extra');
+	});
+
+	test('It should update filtered options when re-rendering with a different options array', async () => {
+		const user = userEvent.setup();
+		const newOptions = [
+			{ label: 'Foo', value: 'foo' },
+			{ label: 'Foorious', value: 'foorious' },
+			{ label: 'Bar', value: 'bar' },
+			{ label: 'Lorem', value: 'lorem' },
+		];
+		const { rerender } = render(<Select searchable options={options} />);
+		await user.click(screen.getByRole('combobox'));
+		await user.type(screen.getByRole('combobox'), 'foo');
+		expect(getAllByRole(screen.getByRole('listbox'), 'option')).toHaveLength(1);
+
+		rerender(<Select searchable options={newOptions} />);
+		expect(getAllByRole(screen.getByRole('listbox'), 'option')).toHaveLength(2);
+	});
 });
