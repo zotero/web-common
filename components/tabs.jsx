@@ -42,13 +42,13 @@ const Tab = memo(props => {
 
 	return (
 		<button
-			role={asSections ? null : 'tab'}
+			role={rest.role ? rest.role : asSections ? null : 'tab'}
 			className={cx({
 				tab: true,
 				active: isActive,
 				disabled: isDisabled
 			})}
-			{...pick(rest, p => p.startsWith('data-') || p.startsWith('aria-'))}
+			{...pick(rest, p => p === 'id' || p.startsWith('data-') || p.startsWith('aria-'))}
 			onClick={handleClick}
 			onKeyDown={handleKeyDown}
 			aria-selected={isActive}
@@ -114,7 +114,9 @@ Tabs.propTypes = {
 };
 
 const TabPane = memo(forwardRef(({ children, isActive, isLoading, className, ...rest }, ref) => (
-	<div ref={ref} className={cx(className, {
+	<div ref={ref}
+		role={ 'role' in rest ? rest.role : 'tabpanel' }
+		className={cx(className, {
 		'tab-pane': true,
 		'active': isActive,
 		'loading': isLoading
