@@ -149,7 +149,7 @@ const useFocusManager = (ref, { initialQuerySelector = null, isCarousel = true, 
 		storeLastFocused(null);
 	}, [storeLastFocused]);
 
-	const receiveFocus = useCallback((ev, isBounced = false) => {
+	const receiveFocus = useCallback((ev, { preventScroll = false, isBounced = false } = {}) => {
 		ev.stopPropagation();
 
 		if(isFocused.current) {
@@ -159,7 +159,7 @@ const useFocusManager = (ref, { initialQuerySelector = null, isCarousel = true, 
 
 		if(ref.current === null && !isBounced) {
 			ev.persist();
-			setTimeout(() => receiveFocus(ev, true));
+			setTimeout(() => receiveFocus(ev, { isBounced: true }));
 			return;
 		}
 
@@ -216,7 +216,7 @@ const useFocusManager = (ref, { initialQuerySelector = null, isCarousel = true, 
 			// keep the focus on the candidate pressed
 			return true;
 		} else if(ev.target === ev.currentTarget && candidates.length > 0) {
-			candidates[0].focus();
+			candidates[0].focus({ preventScroll });
 			return true;
 		}
 	}, [ref, initialQuerySelector]);
