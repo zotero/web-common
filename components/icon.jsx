@@ -1,8 +1,9 @@
-import { memo, forwardRef, useEffect } from 'react';
+import { memo, forwardRef, useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { useForceUpdate } from '../hooks';
 import { pick } from '../utils';
+import { StaticContext } from '.';
 
 const is2xMQL = typeof(matchMedia) === 'function' ? matchMedia("(min-resolution: 1.5dppx)") : { matches: false };
 const isDarkMQL = typeof(matchMedia) === 'function' ? matchMedia('(prefers-color-scheme: dark)') : { matches: false };
@@ -29,6 +30,7 @@ export const Icon = memo(forwardRef((props, ref) => {
 	const basename = type.split(/[\\/]/).pop();
 	const pixelRatio = usePixelRatio ? is2xMQL.matches ? '@2x' : '@1x' : '';
 	const forceUpdate = useForceUpdate();
+	const staticPrefix = useContext(StaticContext);
 
 	let symbol = props.symbol || basename;
 
@@ -87,7 +89,7 @@ export const Icon = memo(forwardRef((props, ref) => {
 			viewBox={ viewBox }
 			{...pick(rest, p => p.startsWith('data-'))}
 		>
-			<use xlinkHref={`/static/icons/${type}${pixelRatio}.svg#${symbol}`} />
+			<use xlinkHref={`${staticPrefix}/icons/${type}${pixelRatio}.svg#${symbol}`} />
 		</svg>
 	);
 }));
