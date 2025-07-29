@@ -15,16 +15,22 @@ export const Dropdown = memo(props => {
 	const ref = useRef(null);
 	const isKeyboardTrigger = useRef(false);
 	const { disabled, isOpen, onToggle, className, placement = 'bottom-start', maxHeight, ...rest } = props;
-	const { x, y, refs, strategy, update } = useFloating({
-		placement, middleware: [flip(), shift(), size({
-			apply: ({ availableHeight, elements }) => {
-				Object.assign(elements.floating.style, { overflow: 'auto', maxHeight: `${maxHeight ? maxHeight : availableHeight}px` });
-			}
-		})],
-	});
 	const wasOpen = usePrevious(isOpen);
 	const [isReady, setIsReady] = useState(false);
+	const middleware = [flip({ fallbackAxisSideDirection: 'end' }), shift()];
+	// `maxHeight` can be a number in px or if is set to true, use the available height minus some padding
+	if (maxHeight) {
+		middleware.push(size({
+			apply({ availableHeight, elements }) {
+				Object.assign(elements.floating.style, {
+					overflow: 'auto',
+					maxHeight: typeof (maxHeight) === 'number' ? `${maxHeight}px` : `${availableHeight - 8}px`,
+				});
+			}
+		}));
+	}
 
+	const { x, y, refs, strategy, update } = useFloating({ placement, middleware });
 
 	const handleToggle = useCallback(ev => {
 		if(disabled) {
