@@ -5,7 +5,13 @@ import { mapObject } from '../utils';
 const isWasmSupported = typeof WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function';
 var Driver = null;
 
+
+// Fetcher class is used to fetch locales for citeproc-rs
 class Fetcher {
+	constructor(path) {
+		this.localesPath = path;
+	}
+
 	async fetchLocale(lang) {
 		const cacheId = `zotero-style-locales-${lang}`;
 		var locales = localStorage.getItem(cacheId);
@@ -19,7 +25,7 @@ class Fetcher {
 		if (locales) {
 			return locales;
 		} else {
-			const response = await fetch(`/static/locales/locales-${lang}.xml`);
+			const response = await fetch(`${this.localesPath}locales-${lang}.xml`);
 			const locales = await response.text();
 			localStorage.setItem(cacheId, locales);
 			return locales;
@@ -27,7 +33,9 @@ class Fetcher {
 	}
 }
 
-const retrieveLocaleSync = lang => {
+// retrieveLocaleSync is used by citeproc-js to synchronously fetch locales. This function needs to
+// be bound with a correct value of localesPath before being passed to citeproc-js.
+const retrieveLocaleSync = (localesPath, lang) => {
 	const cacheId = `zotero-style-locales-${lang}`;
 	var locales = localStorage.getItem(cacheId);
 
@@ -38,7 +46,7 @@ const retrieveLocaleSync = lang => {
 	}
 
 	if (!locales) {
-		const url = `/static/locales/locales-${lang}.xml`;
+		const url = `${localesPath}locales-${lang}.xml`;
 		try {
 			locales = syncRequestAsText(url);
 			localStorage.setItem(cacheId, locales);
@@ -113,15 +121,15 @@ const pickBestLocale = (userLocales, supportedLocales, fallback = 'en-US') => {
 }
 
 class CiteprocWrapper {
-	constructor(isLegacy, engine, opts) {
-		this.isLegacy = isLegacy;
+	constructor(isCiteprocJS, engine, opts) {
+		this.isCiteprocJS = isCiteprocJS;
 		this.opts = opts;
-		if (isLegacy) {
+		if (isCiteprocJS) {
 			this.CSL = engine;
 			this.itemsStore = {};
 			this.clustersStore = [];
 			this.driver = new this.CSL.Engine({
-				retrieveLocale: retrieveLocaleSync,
+				retrieveLocale: opts.retrieveLocale,
 				retrieveItem: itemId => this.itemsStore[itemId],
 				uppercase_subtitles: getStyleProperties(opts.style)?.isUppercaseSubtitlesStyle,
 			}, opts.style, opts.localeOverride || opts.lang, !!opts.localeOverride);
@@ -133,12 +141,12 @@ class CiteprocWrapper {
 	}
 
 	batchedUpdates() {
-		if (this.isLegacy) {
-			const legacyDriverBib = this.driver.makeBibliography();
+		if (this.isCiteprocJS) {
+			const bibliographyData = this.driver.makeBibliography();
 			var bibliography = null;
 
-			if (legacyDriverBib) {
-				const [meta, items] = legacyDriverBib;
+			if (bibliographyData) {
+				const [meta, items] = bibliographyData;
 				const updatedEntries = meta.entry_ids.reduce((acc, id, index) => {
 					acc[id] = items[index];
 					return acc;
@@ -169,7 +177,7 @@ class CiteprocWrapper {
 	}
 
 	bibliographyMeta() {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			if (!this.nextMeta) {
 				throw Error('bibliographyMeta() can only be called immediately after makeBibliography() when using citeprocJS');
 			}
@@ -182,7 +190,7 @@ class CiteprocWrapper {
 	}
 
 	builtCluster(id) {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			throw new Error('builtCluster() is not supported when using citeprocJS');
 		} else {
 			return this.driver.builtCluster(id);
@@ -191,7 +199,7 @@ class CiteprocWrapper {
 	}
 
 	drain() {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			throw new Error('drain() is not supported when using citeprocJS');
 		} else {
 			return this.driver.drain();
@@ -200,7 +208,7 @@ class CiteprocWrapper {
 	}
 
 	fetchLocales() {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			// CSL fetches locale on its own without being prompted
 			return;
 		} else {
@@ -210,7 +218,7 @@ class CiteprocWrapper {
 	}
 
 	free() {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			// CSL does not require explicit resource freeing
 			return;
 		} else {
@@ -220,7 +228,7 @@ class CiteprocWrapper {
 	}
 
 	fullRender() {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			const allClusters = this.driver.rebuildProcessorState(
 				this.clustersStore.map(cluster => ({
 					citationID: cluster.id,
@@ -238,7 +246,7 @@ class CiteprocWrapper {
 	}
 
 	includeUncited(uncited) {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			this.shouldIncludeUncidted = uncited;
 		} else {
 			return this.driver.includeUncited(uncited);
@@ -246,7 +254,7 @@ class CiteprocWrapper {
 	}
 
 	initClusters(clusters) {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			this.clustersStore = clusters;
 		} else {
 			return this.driver.initClusters(clusters);
@@ -254,7 +262,7 @@ class CiteprocWrapper {
 	}
 
 	insertCluster(cluster) {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			this.clustersStore.push(cluster);
 		} else {
 			return this.driver.insertCluster(cluster);
@@ -262,7 +270,7 @@ class CiteprocWrapper {
 	}
 
 	insertReference(refr) {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			this.itemsStore[refr.id] = refr;
 			this.driver.updateItems(Object.keys(this.itemsStore));
 		} else {
@@ -271,7 +279,7 @@ class CiteprocWrapper {
 	}
 
 	insertReferences(refs) {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			this.itemsStore = { ...this.itemsStore, ...Object.fromEntries(refs.map(item => ([item.id, item]))) };
 			this.driver.updateItems(Object.keys(this.itemsStore));
 		} else {
@@ -280,7 +288,7 @@ class CiteprocWrapper {
 	}
 
 	makeBibliography() {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			const [meta, items] = this.driver.makeBibliography();
 			this.nextMeta = CiteprocWrapper.metaCiteprocJStoRS(meta, this.opts.format);
 			return meta.entry_ids.map((id, index) => ({ id: Array.isArray(id) ? id[0] : id, value: items[index] }));
@@ -294,7 +302,7 @@ class CiteprocWrapper {
 	}
 
 	previewCitationCluster(cites, positions, format) {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			if (format === 'plain') {
 				format = 'text';
 			}
@@ -306,7 +314,7 @@ class CiteprocWrapper {
 	}
 
 	randomClusterId() {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			throw new Error('randomClusterId() is not supported when using citeprocJS');
 		} else {
 			return this.driver.randomClusterId();
@@ -314,7 +322,7 @@ class CiteprocWrapper {
 	}
 
 	removeCluster(cluster_id) {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			this.clustersStore = this.clustersStore.filter(c => c.id !== cluster_id);
 		} else {
 			return this.driver.removeCluster(cluster_id);
@@ -322,7 +330,7 @@ class CiteprocWrapper {
 	}
 
 	removeReference(id) {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			delete this.itemsStore[id];
 			this.driver.updateItems(Object.keys(this.itemsStore));
 		} else {
@@ -331,7 +339,7 @@ class CiteprocWrapper {
 	}
 
 	resetReferences(refs) {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			this.itemsStore = Object.fromEntries(refs.map(item => ([item.id, item])));
 			this.driver.updateItems([]); // workaround for #256
 			this.driver.updateItems(Object.keys(this.itemsStore));
@@ -342,7 +350,7 @@ class CiteprocWrapper {
 	}
 
 	setClusterOrder(positions) {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			// TODO: implement for citeproc JS
 		} else {
 			return this.driver.setClusterOrder(positions);
@@ -351,7 +359,7 @@ class CiteprocWrapper {
 	}
 
 	setStyle(newStyleXml, newLocaleOverride = null) {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			// citeprocJS doesn't seem to be able to set style so we recreate the driver
 			this.recreateEngine({ style: newStyleXml, localeOverride: newLocaleOverride });
 		} else {
@@ -366,10 +374,10 @@ class CiteprocWrapper {
 
 	// not part of citeproc-rs api
 	recreateEngine(newOpts) {
-		if (this.isLegacy) {
+		if (this.isCiteprocJS) {
 			this.opts = { ...this.opts, ...newOpts };
 			this.driver = new this.CSL.Engine({
-				retrieveLocale: retrieveLocaleSync,
+				retrieveLocale: this.retrieveLocale,
 				retrieveItem: itemId => this.itemsStore[itemId],
 				uppercase_subtitles: getStyleProperties(this.opts.style)?.isUppercaseSubtitlesStyle
 			}, this.opts.style, this.opts.localeOverride || this.opts.lang, !!this.opts.localeOverride);
@@ -379,13 +387,13 @@ class CiteprocWrapper {
 	}
 }
 
-const getCSL = async () => {
+const getCSL = async (path) => {
 	if ('CSL' in window) {
 		return Promise.resolve(window.CSL);
 	}
 
 	return new Promise((resolve, reject) => {
-		load('/static/js/citeproc.js', (err) => {
+		load(path, (err) => {
 			if (err) {
 				reject(err);
 			} else {
@@ -395,7 +403,7 @@ const getCSL = async () => {
 	});
 };
 
-const getCiteprocRSLoader = async () => {
+const getCiteprocRSLoader = async (path) => {
 	// Loading citeproc-rs involves using dynamic module import (await import(...)) which will
 	// trigger a syntax error while the code is being parsed in some older browsers even though zbib
 	// would work perfectly fine in such browser with citeprocJS. For this reason we host this code
@@ -405,7 +413,7 @@ const getCiteprocRSLoader = async () => {
 	}
 
 	return new Promise((resolve, reject) => {
-		load('/static/js/citeproc-rs-loader.js', { type: 'module' }, err => {
+		load(path, { type: 'module' }, err => {
 			if (err) {
 				reject(err);
 			} else {
@@ -415,30 +423,42 @@ const getCiteprocRSLoader = async () => {
 	});
 }
 
-CiteprocWrapper.new = async ({ style, format = 'html', lang = null, supportedLocales = ["en-US"], localeOverride = null, formatOptions = { linkAnchors: true } }, useLegacy = null, DriverORCSL = null) => {
+CiteprocWrapper.new = async(style, {
+	citeprocJSPath = '/static/js/citeproc.js',
+	citeprocRSPath = '/static/js/citeproc-rs-loader.js',
+	localesPath = '/static/locales/',
+	DriverORCSL = null,
+	format = 'html',
+	formatOptions = { linkAnchors: true },
+	lang = null,
+	localeOverride = null,
+	supportedLocales = ["en-US"],
+	useCiteprocJS = null,
+}) => {
 	const userLocales = lang ? lang : window ? (window.navigator.languages || window.navigator.userLanguage || window.navigator.language) : null;
 	lang = pickBestLocale(userLocales, supportedLocales);
-	useLegacy = useLegacy === null ? !isWasmSupported : useLegacy;
+	useCiteprocJS = useCiteprocJS === null ? !isWasmSupported : useCiteprocJS;
 
 	try {
-		if (useLegacy) {
-			const CSL = DriverORCSL ?? await getCSL();
+		if (useCiteprocJS) {
+			const CSL = DriverORCSL ?? await getCSL(citeprocJSPath);
+			const retrieveLocale = retrieveLocaleSync.bind(null, localesPath);
 			if (format === 'plain') {
 				format = 'text';
 			}
-			return new CiteprocWrapper(true, CSL, { style, format, lang, localeOverride, formatOptions });
+			return new CiteprocWrapper(true, CSL, { style, format, lang, localeOverride, formatOptions, retrieveLocale });
 		} else {
 			if (!Driver) {
 				if (DriverORCSL) {
 					Driver = DriverORCSL;
 				} else {
-					const citeprocLoader = await getCiteprocRSLoader();
+					const citeprocLoader = await getCiteprocRSLoader(citeprocRSPath);
 					const { init, CreateDriver } = await citeprocLoader();
 					Driver = CreateDriver;
 					await init();
 				}
 			}
-			const fetcher = new Fetcher();
+			const fetcher = new Fetcher(localesPath);
 			const driver = new Driver({ localeOverride, format, formatOptions, style, fetcher });
 			await driver.fetchLocales();
 			return new CiteprocWrapper(false, driver, { style, format, lang, localeOverride, formatOptions, Driver });
