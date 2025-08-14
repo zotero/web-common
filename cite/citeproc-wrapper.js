@@ -120,6 +120,19 @@ const pickBestLocale = (userLocales, supportedLocales, fallback = 'en-US') => {
 	return fallback;
 }
 
+// Deal with CiteprocJS bibliography errors, see zotero/zoterobib#309
+const handleBibliographyErrors = (meta, items, itemsStore, skipErrors = false) => {
+	meta.bibliography_errors.forEach(({ index, itemID, error_code }) => {
+		console.warn(`CiteprocJS bibliography error: ${error_code} for item ${itemID} at index ${index}`, { meta, items, itemsStore });
+		const failedItemData = itemsStore[itemID] ?? {};
+		items.splice(index, 0, skipErrors ? '' : `<span class="csl-error">${failedItemData.title ?? '<i>Untitled</i>'}</span>`);
+	});
+	if (meta.entry_ids.length !== items.length) {
+		throw new Error("CiteprocJS bibliography meta entry_ids length does not match items length");
+	}
+	return items;
+}
+
 class CiteprocWrapper {
 	constructor(isCiteprocJS, engine, opts) {
 		this.isCiteprocJS = isCiteprocJS;
@@ -142,7 +155,8 @@ class CiteprocWrapper {
 
 	batchedUpdates() {
 		if (this.isCiteprocJS) {
-			const bibliographyData = this.driver.makeBibliography();
+			let bibliographyData = this.driver.makeBibliography();
+			bibliographyData[1] = handleBibliographyErrors(bibliographyData[0], bibliographyData[1], this.itemsStore, this.opts.skipErrors);
 			var bibliography = null;
 
 			if (bibliographyData) {
@@ -289,7 +303,8 @@ class CiteprocWrapper {
 
 	makeBibliography() {
 		if (this.isCiteprocJS) {
-			const [meta, items] = this.driver.makeBibliography();
+			let [meta, items] = this.driver.makeBibliography();
+			items = handleBibliographyErrors(meta, items, this.itemsStore, this.opts.skipErrors);
 			this.nextMeta = CiteprocWrapper.metaCiteprocJStoRS(meta, this.opts.format);
 			return meta.entry_ids.map((id, index) => ({ id: Array.isArray(id) ? id[0] : id, value: items[index] }));
 		} else {
@@ -432,6 +447,7 @@ CiteprocWrapper.new = async(style, {
 	formatOptions = { linkAnchors: true },
 	lang = null,
 	localeOverride = null,
+	skipErrors = false,
 	supportedLocales = ["en-US"],
 	useCiteprocJS = null,
 }) => {
@@ -446,7 +462,7 @@ CiteprocWrapper.new = async(style, {
 			if (format === 'plain') {
 				format = 'text';
 			}
-			return new CiteprocWrapper(true, CSL, { style, format, lang, localeOverride, formatOptions, retrieveLocale });
+			return new CiteprocWrapper(true, CSL, { skipErrors, style, format, lang, localeOverride, formatOptions, retrieveLocale });
 		} else {
 			if (!Driver) {
 				if (DriverORCSL) {
@@ -461,7 +477,7 @@ CiteprocWrapper.new = async(style, {
 			const fetcher = new Fetcher(localesPath);
 			const driver = new Driver({ localeOverride, format, formatOptions, style, fetcher });
 			await driver.fetchLocales();
-			return new CiteprocWrapper(false, driver, { style, format, lang, localeOverride, formatOptions, Driver });
+			return new CiteprocWrapper(false, driver, { skipErrors, style, format, lang, localeOverride, formatOptions, Driver });
 		}
 	} catch (err) {
 		console.error(err);
