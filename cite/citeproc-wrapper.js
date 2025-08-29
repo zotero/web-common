@@ -392,7 +392,7 @@ class CiteprocWrapper {
 		if (this.isCiteprocJS) {
 			this.opts = { ...this.opts, ...newOpts };
 			this.driver = new this.CSL.Engine({
-				retrieveLocale: this.retrieveLocale,
+				retrieveLocale: this.opts.retrieveLocale,
 				retrieveItem: itemId => this.itemsStore[itemId],
 				uppercase_subtitles: getStyleProperties(this.opts.style)?.isUppercaseSubtitlesStyle
 			}, this.opts.style, this.opts.localeOverride || this.opts.lang, !!this.opts.localeOverride);
