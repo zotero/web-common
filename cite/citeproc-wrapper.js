@@ -5,6 +5,8 @@ import { mapObject } from '../utils';
 const isWasmSupported = typeof WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function';
 var Driver = null;
 
+// Locale files are kept only in memory. On page reload, they will be re-fetched or retrieved from the browser cache.
+var localeCache = {};
 
 // Fetcher class is used to fetch locales for citeproc-rs
 class Fetcher {
@@ -13,50 +15,30 @@ class Fetcher {
 	}
 
 	async fetchLocale(lang) {
-		const cacheId = `zotero-style-locales-${lang}`;
-		var locales = localStorage.getItem(cacheId);
-
-		// fix in place for scenarios where potentially bad locales have been cached
-		// see issue zotero/zoterobib#236
-		if (typeof locales === 'string' && !locales.startsWith('<?xml')) {
-			locales = false;
+		if (lang in localeCache) {
+			return localeCache[lang];
 		}
-
-		if (locales) {
-			return locales;
-		} else {
-			const response = await fetch(`${this.localesPath}locales-${lang}.xml`);
-			const locales = await response.text();
-			localStorage.setItem(cacheId, locales);
-			return locales;
-		}
+		const response = await fetch(`${this.localesPath}locales-${lang}.xml`);
+		const locales = await response.text();
+		localeCache[lang] = locales;
+		return locales;
 	}
 }
 
 // retrieveLocaleSync is used by citeproc-js to synchronously fetch locales. This function needs to
 // be bound with a correct value of localesPath before being passed to citeproc-js.
 const retrieveLocaleSync = (localesPath, lang) => {
-	const cacheId = `zotero-style-locales-${lang}`;
-	var locales = localStorage.getItem(cacheId);
-
-	// fix in place for scenarios where potentially bad locales have been cached
-	// see issue zotero/zoterobib#236
-	if (typeof locales === 'string' && !locales.startsWith('<?xml')) {
-		locales = false;
+	const url = `${localesPath}locales-${lang}.xml`;
+	if (lang in localeCache) {
+		return localeCache[lang];
 	}
 
-	if (!locales) {
-		const url = `${localesPath}locales-${lang}.xml`;
-		try {
-			locales = syncRequestAsText(url);
-			localStorage.setItem(cacheId, locales);
-		} catch (e) {
-			if (!locales) {
-				throw new Error(`Failed to load locales ${lang}`);
-			}
-		}
+	try {
+		localeCache[lang] = syncRequestAsText(url);
+		return localeCache[lang];
+	} catch (e) {
+		throw new Error(`Failed to load locales ${lang}`);
 	}
-	return locales;
 };
 
 const fixCitesCompatiblity = cites => {
