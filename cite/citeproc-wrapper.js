@@ -36,7 +36,7 @@ const retrieveLocaleSync = (localesPath, lang) => {
 	try {
 		localeCache[lang] = syncRequestAsText(url);
 		return localeCache[lang];
-	} catch (e) {
+	} catch (e) { // eslint-disable-line no-unused-vars
 		throw new Error(`Failed to load locales ${lang}`);
 	}
 };
