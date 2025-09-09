@@ -1,19 +1,19 @@
-@import "abstracts/defaults";
-@import "abstracts/mixins/breakpoints";
-@import "abstracts/mixins/selectors";
-@import "abstracts/mixins/utilities";
+@use "abstracts/defaults";
+@use "abstracts/mixins/breakpoints";
+@use "abstracts/mixins/selectors";
+@use "abstracts/mixins/utilities";
 
 .icon {
 	flex: 0 0 auto; // Prevent scaling
 	display: inline-block;
 	vertical-align: middle;
-	color: $icon-color; // Avoid media query here so it is easier to modify the color
+	color: defaults.$icon-color; // Avoid media query here so it is easier to modify the color
 }
 
 .icon-spin {
 	display: block; // todo
-	width: $icon-spin-size-md;
-	height: $icon-spin-size-md;
+	width: defaults.$icon-spin-size-md;
+	height: defaults.$icon-spin-size-md;
 	animation: spin 1s linear infinite;
 
 	@keyframes spin {
@@ -36,18 +36,18 @@
 			}
 		}
 
-	@include mouse-and-bp-up(md) {
-		color: $spinner-color;
+	@include breakpoints.mouse-and-bp-up(md) {
+		color: defaults.$spinner-color;
 	}
 
 	&.large {
-		width: $icon-spin-size-lg;
-		height: $icon-spin-size-lg;
+		width: defaults.$icon-spin-size-lg;
+		height: defaults.$icon-spin-size-lg;
 	}
 
 	&.small {
-		width: $icon-spin-size-sm;
-		height: $icon-spin-size-sm;
+		width: defaults.$icon-spin-size-sm;
+		height: defaults.$icon-spin-size-sm;
 
 		path {
 			stroke-width: 1.2px;
@@ -55,8 +55,8 @@
 	}
 
 	&.inline {
-		width: $icon-spin-size-sm;
-		height: $icon-spin-size-sm;
+		width: defaults.$icon-spin-size-sm;
+		height: defaults.$icon-spin-size-sm;
 		display: inline;
 	}
 

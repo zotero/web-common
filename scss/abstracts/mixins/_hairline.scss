@@ -68,7 +68,7 @@
 	#{$pseudo-element} {
 		content: "";
 		position: absolute;
-		z-index: $z-index-hairline;
+		z-index: defaults.$z-index-hairline;
 		inset: $top $right $bottom $left;
 		width: $width;
 		height: $height;

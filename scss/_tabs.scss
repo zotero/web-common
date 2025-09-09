@@ -1,13 +1,13 @@
-@import "abstracts/defaults";
-@import "abstracts/functions/asset-url";
-@import "abstracts/mixins/breakpoints";
-@import "abstracts/mixins/hairline";
-@import "abstracts/mixins/selectors";
-@import "abstracts/mixins/utilities";
+@use "abstracts/defaults";
+@use "abstracts/functions/asset-url";
+@use "abstracts/mixins/breakpoints";
+@use "abstracts/mixins/hairline";
+@use "abstracts/mixins/selectors";
+@use "abstracts/mixins/utilities";
 
 .tabs {
 	display: flex;
-	border-bottom: $border-width solid $tabs-border-color;
+	border-bottom: defaults.$border-width solid defaults.$tabs-border-color;
 
 	&.justified {
 		width: 100%;
@@ -20,56 +20,56 @@
 		appearance: none;
 		background: none;
 		border: none;
-		color: $tab-inactive-color;
+		color: defaults.$tab-inactive-color;
 		cursor: pointer;
 		display: inline;
 		flex: 1 1 auto;
 		font-family: inherit;
-		font-size: $font-size-base;
+		font-size: defaults.$font-size-base;
 		font-weight: inherit;
-		height: $tabs-height;
+		height: defaults.$tabs-height;
 		justify-content: center;
-		padding: 0 $tabs-padding-x;
+		padding: 0 defaults.$tabs-padding-x;
 		text-decoration: none;
 
-		@include text-truncate;
+		@include utilities.text-truncate;
 
-		@include touch-or-bp-down(sm) {
-			height: $tabs-height-touch;
+		@include breakpoints.touch-or-bp-down(sm) {
+			height: defaults.$tabs-height-touch;
 		}
 
 		&:hover {
-			color: $tab-active-color;
+			color: defaults.$tab-active-color;
 			text-decoration: none;
 		}
 
 		&:focus {
-			@include state(".keyboard .tab") {
-				outline: $outline-width solid $outline-color;
-				outline-offset: -$outline-width;
+			@include selectors.state(".keyboard .tab") {
+				outline: defaults.$outline-width solid defaults.$outline-color;
+				outline-offset: -(defaults.$outline-width);
 			}
 		}
 
 		&.active {
-			color: $tab-active-color;
-			box-shadow: inset 0 -1px $tab-active-color, 0 1px $tab-active-color;
+			color: defaults.$tab-active-color;
+			box-shadow: inset 0 -1px defaults.$tab-active-color, 0 1px defaults.$tab-active-color;
 
 			&:focus-within {
 				box-shadow: none;
 			}
 		}
 
-		@include variant(".tabs.compact") {
-			padding: 0 $tabs-compact-padding-x;
+		@include selectors.variant(".tabs.compact") {
+			padding: 0 defaults.$tabs-compact-padding-x;
 		}
 
-		@include variant(".tabs.justified") {
+		@include selectors.variant(".tabs.justified") {
 			flex: 1 1 0;
 		}
 	}
 
 	.icon {
-		margin-right: $space-xs;
+		margin-right: defaults.$space-xs;
 	}
 }
 
@@ -82,7 +82,7 @@
 		flex-direction: column;
 
 		&.loading {
-			@include state("html:not(.specifity)") {
+			@include selectors.state("html:not(.specifity)") {
 				display: flex;
 				justify-content: center;
 				align-items: center;

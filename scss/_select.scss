@@ -1,8 +1,8 @@
-@import "abstracts/defaults";
-@import "abstracts/functions/asset-url";
-@import "abstracts/mixins/breakpoints";
-@import "abstracts/mixins/selectors";
-@import "abstracts/mixins/utilities";
+@use "abstracts/defaults";
+@use "abstracts/functions/asset-url";
+@use "abstracts/mixins/breakpoints";
+@use "abstracts/mixins/selectors";
+@use "abstracts/mixins/utilities";
 
 .select-component {
 	position: relative;
@@ -12,17 +12,17 @@
 	.select-control {
 		display: flex;
 		align-items: center;
-		border-radius: $input-border-radius;
-		transition: border $input-transition, box-shadow $input-transition;
+		border-radius: defaults.$input-border-radius;
+		transition: border defaults.$input-transition, box-shadow defaults.$input-transition;
 		cursor: default;
-		border: $input-border-width solid $input-border-color;
-		background-color: $input-bg;
-		padding: $input-btn-padding-y ($input-btn-padding-x - 4px) $input-btn-padding-y $input-btn-padding-x; // Todo: just default, handle padding with .form-control and modifier classes on .select.
+		border: defaults.$input-border-width solid defaults.$input-border-color;
+		background-color: defaults.$input-bg;
+		padding: defaults.$input-btn-padding-y (defaults.$input-btn-padding-x - 4px) defaults.$input-btn-padding-y defaults.$input-btn-padding-x; // Todo: just default, handle padding with .form-control and modifier classes on .select.
 		position: relative;
 
-		@include state(".select-component.is-focused") {
-			border: $input-border-width solid $input-focus-color;
-			box-shadow: 0 0 0 2px $input-focus-color;
+		@include selectors.state(".select-component.is-focused") {
+			border: defaults.$input-border-width solid defaults.$input-focus-color;
+			box-shadow: 0 0 0 2px defaults.$input-focus-color;
 			outline: none;
 		}
 	}
@@ -41,21 +41,21 @@
 	}
 
 	.select-value-label {
-		@include text-truncate;
+		@include utilities.text-truncate;
 	}
 
 	.select-value {
 		align-items: center;
 		display: flex;
 		inset: 0;
-		padding: 0 $input-btn-padding-x;
+		padding: 0 defaults.$input-btn-padding-x;
 		position: absolute;
 	}
 
 	&.has-value {
 		.select-value {
-			@include mouse-and-bp-up(md) {
-				padding: $select-value-padding-desktop;
+			@include breakpoints.mouse-and-bp-up(md) {
+				padding: defaults.$select-value-padding-desktop;
 			}
 		}
 	}
@@ -81,7 +81,7 @@
 			font-weight: inherit;
 			outline: none;
 
-			@include state(".select-component:not(.is-searchable)") {
+			@include selectors.state(".select-component:not(.is-searchable)") {
 				pointer-events: none;
 			}
 		}
@@ -93,66 +93,66 @@
 
 	.select-arrow {
 		display: block;
-		width: $space-md;
-		height: $space-md;
-		background: image-url($select-chevron-icon) no-repeat 0 0;
+		width: defaults.$space-md;
+		height: defaults.$space-md;
+		background: asset-url.image-url(defaults.$select-chevron-icon) no-repeat 0 0;
 	}
 
 	.select-menu-outer {
 		position: absolute;
-		left: $input-border-width;
-		top: calc(100% + #{$space-min + $input-border-width});
-		right: $input-border-width;
-		background-color: $menu-bg;
-		border-radius: $menu-border-radius;
-		z-index: $z-index-menu;
-		padding: $space-min 0;
-		box-shadow: $menu-box-shadow;
+		left: defaults.$input-border-width;
+		top: calc(100% + #{defaults.$space-min + defaults.$input-border-width});
+		right: defaults.$input-border-width;
+		background-color: defaults.$menu-bg;
+		border-radius: defaults.$menu-border-radius;
+		z-index: defaults.$z-index-menu;
+		padding: defaults.$space-min 0;
+		box-shadow: defaults.$menu-box-shadow;
 		background-clip: padding-box;
 	}
 
 	.select-menu {
-		max-height: 10 * $line-height-large;
+		max-height: 10 * defaults.$line-height-large;
 		overflow-y: auto;
 	}
 
 	.select-option,
 	.select-noresults {
-		padding: 0 $input-btn-padding-x;
-		line-height: $line-height-large;
+		padding: 0 defaults.$input-btn-padding-x;
+		line-height: defaults.$line-height-large;
 	}
 
 	.select-option {
 		cursor: pointer;
-		color: $menu-color;
+		color: defaults.$menu-color;
 
 		// is-mouse and is-keyboard are mutex in .select-component
 		&:hover {
-			@include state(".select-component.is-mouse") {
-				color: $menu-item-hover-color;
-				background-color: $menu-item-hover-bg;
+			@include selectors.state(".select-component.is-mouse") {
+				color: defaults.$menu-item-hover-color;
+				background-color: defaults.$menu-item-hover-bg;
 			}
 		}
 
 		&.is-focused:not(.is-selected) {
-			@include state(".select-component.is-keyboard") {
-				color: $menu-item-hover-color;
-				background-color: $menu-item-hover-bg;
+			@include selectors.state(".select-component.is-keyboard") {
+				color: defaults.$menu-item-hover-color;
+				background-color: defaults.$menu-item-hover-bg;
 			}
 		}
 
 		&.is-selected {
-			color: $menu-item-selected-color;
-			background-color: $menu-item-selected-bg;
+			color: defaults.$menu-item-selected-color;
+			background-color: defaults.$menu-item-selected-bg;
 		}
 	}
 
 	.select-divider {
-		border-top: $input-border-width solid $menu-devider;
+		border-top: defaults.$input-border-width solid defaults.$menu-devider;
 	}
 
 	.select-noresults {
-		color: $menu-no-results-color;
-		background-color: $menu-no-results-bg;
+		color: defaults.$menu-no-results-color;
+		background-color: defaults.$menu-no-results-bg;
 	}
 }

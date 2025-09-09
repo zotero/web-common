@@ -99,8 +99,8 @@ $menu-item-selected-bg: $shade-2 !default;
 $menu-devider: $shade-2 !default;
 $menu-no-results-color: $shade-5 !default;
 
-$dropdown-item-padding-x-touch: $space-md;
-$dropdown-item-padding-y-touch: 9px;
+$dropdown-item-padding-x-touch: $space-md !default;
+$dropdown-item-padding-y-touch: 9px !default;
 
 $input-btn-focus-width: 2px !default;
 $input-btn-border-radius: $border-radius-sm !default;

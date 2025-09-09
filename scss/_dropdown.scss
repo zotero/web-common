@@ -1,7 +1,7 @@
-@import "abstracts/defaults";
-@import "abstracts/mixins/breakpoints";
-@import "abstracts/mixins/selectors";
-@import "abstracts/mixins/utilities";
+@use "abstracts/defaults";
+@use "abstracts/mixins/breakpoints";
+@use "abstracts/mixins/selectors";
+@use "abstracts/mixins/utilities";
 
 .dropdown {
 	position: relative;
@@ -16,14 +16,14 @@
 			vertical-align: -2px; // Works for btn-lg
 		}
 
-		@include state(".dropdown.show") {
+		@include selectors.state(".dropdown.show") {
 			&.btn-link,
 			&.btn-icon {
-				@include mouse-and-bp-up(md) {
-					color: $icon-active-color;
+				@include breakpoints.mouse-and-bp-up(md) {
+					color: defaults.$icon-active-color;
 
 					.icon {
-						color: $icon-active-color;
+						color: defaults.$icon-active-color;
 					}
 				}
 			}
@@ -31,11 +31,11 @@
 	}
 
 	.dropdown-menu {
-		background-color: $menu-bg;
-		box-shadow: $menu-box-shadow;
-		border-radius: $menu-border-radius;
-		z-index: $z-index-menu;
-		margin: $space-min 0;
+		background-color: defaults.$menu-bg;
+		box-shadow: defaults.$menu-box-shadow;
+		border-radius: defaults.$menu-border-radius;
+		z-index: defaults.$z-index-menu;
+		margin: defaults.$space-min 0;
 		display: none;
 		will-change: transform;
 		transform: translate3d(0, 0, 0);
@@ -46,15 +46,15 @@
 			outline: none;
 		}
 
-		@include touch-or-bp-down(sm) {
-			padding: $space-xs 0;
+		@include breakpoints.touch-or-bp-down(sm) {
+			padding: defaults.$space-xs 0;
 		}
 
-		@include mouse-and-bp-up(md) {
-			padding: $space-min 0;
+		@include breakpoints.mouse-and-bp-up(md) {
+			padding: defaults.$space-min 0;
 		}
 
-		@include state(".dropdown.show") {
+		@include selectors.state(".dropdown.show") {
 			display: block;
 		}
 	}
@@ -67,21 +67,21 @@
 		background-color: transparent;
 		margin: 0;
 		white-space: nowrap; // Prevent line break due to positioned dropdown-wrapper
-		color: $menu-color;
+		color: defaults.$menu-color;
 		cursor: pointer;
 
-		@include touch-or-bp-down(sm) {
-			line-height: $line-height-base-mobile; // Prevent inheritance
-			padding: $dropdown-item-padding-y-touch $dropdown-item-padding-x-touch;
+		@include breakpoints.touch-or-bp-down(sm) {
+			line-height: defaults.$line-height-base-mobile; // Prevent inheritance
+			padding: defaults.$dropdown-item-padding-y-touch defaults.$dropdown-item-padding-x-touch;
 		}
 
-		@include mouse-and-bp-up(md) {
-			line-height: $line-height-base; // Prevent inheritance
-			padding: ($input-btn-padding-y + $input-border-width) $input-btn-padding-x;
+		@include breakpoints.mouse-and-bp-up(md) {
+			line-height: defaults.$line-height-base; // Prevent inheritance
+			padding: (defaults.$input-btn-padding-y + defaults.$input-border-width) defaults.$input-btn-padding-x;
 		}
 
 		&.disabled {
-			color: $menu-color-disabled;
+			color: defaults.$menu-color-disabled;
 
 			&:hover,
 			&:focus {
@@ -95,43 +95,43 @@
 
 		&:hover,
 		&.active {
-			background-color: $menu-item-hover-bg;
+			background-color: defaults.$menu-item-hover-bg;
 		}
 
-		@include state(".keyboard .dropdown") {
+		@include selectors.state(".keyboard .dropdown") {
 			&:focus {
-				background-color: $menu-item-hover-bg;
+				background-color: defaults.$menu-item-hover-bg;
 			}
 		}
 
 		&.selected {
-			background-color: $menu-item-selected-bg;
+			background-color: defaults.$menu-item-selected-bg;
 
 			&:hover,
 			&:focus,
 			&.active {
-				background-color: $menu-item-selected-hover-bg;
+				background-color: defaults.$menu-item-selected-hover-bg;
 			}
 		}
 
 		.icon {
 			vertical-align: top;
 
-			@include touch-or-bp-down(sm) {
-				margin-right: $space-xs;
+			@include breakpoints.touch-or-bp-down(sm) {
+				margin-right: defaults.$space-xs;
 			}
 		}
 	}
 
 	.dropdown-divider {
-		border-top: $input-border-width solid $menu-devider;
+		border-top: defaults.$input-border-width solid defaults.$menu-devider;
 
-		@include touch-or-bp-down(sm) {
-			margin: $space-xs 0;
+		@include breakpoints.touch-or-bp-down(sm) {
+			margin: defaults.$space-xs 0;
 		}
 
-		@include mouse-and-bp-up(md) {
-			margin: $space-min 0;
+		@include breakpoints.mouse-and-bp-up(md) {
+			margin: defaults.$space-min 0;
 		}
 	}
 }
