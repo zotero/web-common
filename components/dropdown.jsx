@@ -129,7 +129,7 @@ Dropdown.propTypes = {
     className: PropTypes.string,
     disabled: PropTypes.bool,
     isOpen: PropTypes.bool,
-    maxHeight: PropTypes.number,
+	maxHeight: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]),
     modifiers: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.object), PropTypes.object]),
     onToggle: PropTypes.func,
     placement: PropTypes.string
