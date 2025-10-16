@@ -1,5 +1,4 @@
 @use "abstracts/defaults";
-@use "abstracts/functions/asset-url";
 @use "abstracts/mixins/breakpoints";
 @use "abstracts/mixins/selectors";
 @use "abstracts/mixins/utilities";
@@ -95,7 +94,7 @@
 		display: block;
 		width: defaults.$space-md;
 		height: defaults.$space-md;
-		background: asset-url.image-url(defaults.$select-chevron-icon) no-repeat 0 0;
+		background: defaults.$select-chevron-icon no-repeat 0 0;
 	}
 
 	.select-menu-outer {
