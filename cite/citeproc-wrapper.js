@@ -138,10 +138,10 @@ class CiteprocWrapper {
 	batchedUpdates() {
 		if (this.isCiteprocJS) {
 			let bibliographyData = this.driver.makeBibliography();
-			bibliographyData[1] = handleBibliographyErrors(bibliographyData[0], bibliographyData[1], this.itemsStore, this.opts.skipErrors);
-			var bibliography = null;
+			let bibliography = null;
 
 			if (bibliographyData) {
+				bibliographyData[1] = handleBibliographyErrors(bibliographyData[0], bibliographyData[1], this.itemsStore, this.opts.skipErrors);
 				const [meta, items] = bibliographyData;
 				const updatedEntries = meta.entry_ids.reduce((acc, id, index) => {
 					acc[id] = items[index];
