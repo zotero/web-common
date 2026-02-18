@@ -109,6 +109,7 @@ test('Keyboard navigation', async ({ mount }) => {
 	const item3 = component.getByRole('menuitem', { name: 'Item 3' });
 
 	const page = component.page();
+	await expect(toggle).not.toBeFocused();
 
 	// Open the dropdown with Enter - focus auto-moves to the first item
 	await toggle.focus();
