@@ -1,5 +1,6 @@
 import { createContext, forwardRef, memo, useCallback, useContext, useRef, useEffect,
 	useLayoutEffect, useState, } from 'react';
+import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
 import { flip, size, shift, useFloating } from '@floating-ui/react-dom';
 import cx from 'classnames';
@@ -14,7 +15,7 @@ export const DropdownContext = createContext({});
 export const Dropdown = memo(props => {
 	const ref = useRef(null);
 	const isKeyboardTrigger = useRef(false);
-	const { disabled, isOpen, onToggle, className, placement = 'bottom-start', maxHeight, ...rest } = props;
+	const { disabled, isOpen, onToggle, className, placement = 'bottom-start', maxHeight, portal, ...rest } = props;
 	const wasOpen = usePrevious(isOpen);
 	const [isReady, setIsReady] = useState(false);
 	const middleware = [flip({ fallbackAxisSideDirection: 'end' }), shift()];
@@ -67,9 +68,13 @@ export const Dropdown = memo(props => {
 			return;
 		}
 
+		if(refs.floating.current?.contains(ev.target)) {
+			return;
+		}
+
 		onToggle?.(ev);
 
-	}, [onToggle]);
+	}, [onToggle, refs]);
 
 	useLayoutEffect(() => {
 		if (isOpen !== wasOpen && typeof wasOpen !== 'undefined') {
@@ -80,12 +85,12 @@ export const Dropdown = memo(props => {
 
 	useEffect(() => {
 		if(isOpen && !wasOpen) {
-			ref.current.querySelector('[role="menu"]')?.focus();
+			(refs.floating.current ?? ref.current.querySelector('[role="menu"]'))?.focus();
 		}
 		if(wasOpen && !isOpen) {
 			ref.current.querySelector('[aria-haspopup="true"]')?.focus();
 		}
-	}, [isOpen, wasOpen]);
+	}, [isOpen, wasOpen, refs]);
 
 	useEffect(() => {
 		if(isOpen) {
@@ -108,7 +113,7 @@ export const Dropdown = memo(props => {
 
 	return (
 		<DropdownContext.Provider
-			value={{ handleToggle, isOpen, x, y, refs, strategy, update, isReady }}>
+			value={{ handleToggle, isOpen, x, y, refs, strategy, update, isReady, portal }}>
 				<div
 					ref={ref}
 					className={cx('dropdown', className, {
@@ -125,14 +130,15 @@ export const Dropdown = memo(props => {
 Dropdown.displayName = 'Dropdown';
 
 Dropdown.propTypes = {
-    children: PropTypes.node,
-    className: PropTypes.string,
-    disabled: PropTypes.bool,
-    isOpen: PropTypes.bool,
+	children: PropTypes.node,
+	className: PropTypes.string,
+	disabled: PropTypes.bool,
+	isOpen: PropTypes.bool,
 	maxHeight: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]),
-    modifiers: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.object), PropTypes.object]),
-    onToggle: PropTypes.func,
-    placement: PropTypes.string
+	modifiers: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.object), PropTypes.object]),
+	onToggle: PropTypes.func,
+	portal: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
+	placement: PropTypes.string
 };
 
 export const DropdownToggle = memo(forwardRef((props, ref) => {
@@ -190,7 +196,7 @@ export const DropdownMenu = memo(props => {
 	const { className, ...rest } = props;
 	const ref = useRef(null);
 
-	const { isOpen, x, y, isReady, strategy, refs, handleToggle } = useContext(DropdownContext);
+	const { isOpen, x, y, isReady, strategy, refs, handleToggle, portal } = useContext(DropdownContext);
 	const { focusNext, focusPrev, receiveBlur, receiveFocus, resetLastFocused } = useFocusManager(ref, { initialQuerySelector: '[role="menuitem"]' });
 	const wasOpen = usePrevious(isOpen);
 
@@ -220,7 +226,7 @@ export const DropdownMenu = memo(props => {
 		}
 	}, [isOpen, resetLastFocused, wasOpen]);
 
-	return (
+	const menu = (
 		<div
 			suppressHydrationWarning={true}
 			role="menu"
@@ -229,6 +235,7 @@ export const DropdownMenu = memo(props => {
 			style={{ position: strategy, transform: (isOpen && isReady) ? `translate3d(${x}px, ${y}px, 0px)` : ''}}
 			className={cx('dropdown-menu', className, {
 				'show': (isOpen && isReady),
+				'portal': portal,
 			})}
 			tabIndex={-1}
 			onFocus={handleReceiveFocus}
@@ -239,6 +246,12 @@ export const DropdownMenu = memo(props => {
 			{props.children}
 		</div>
 	);
+
+	if (portal) {
+		return createPortal(menu, typeof portal === 'object' ? portal : document.body);
+	}
+
+	return menu;
 });
 
 DropdownMenu.displayName = 'DropdownMenu';
