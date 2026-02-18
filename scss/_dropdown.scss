@@ -30,35 +30,6 @@
 		}
 	}
 
-	.dropdown-menu {
-		background-color: defaults.$menu-bg;
-		box-shadow: defaults.$menu-box-shadow;
-		border-radius: defaults.$menu-border-radius;
-		z-index: defaults.$z-index-menu;
-		margin: defaults.$space-min 0;
-		display: none;
-		will-change: transform;
-		transform: translate3d(0, 0, 0);
-		top: 0;
-		left: 0; // required for correct popper js rendering
-
-		&:focus {
-			outline: none;
-		}
-
-		@include breakpoints.touch-or-bp-down(sm) {
-			padding: defaults.$space-xs 0;
-		}
-
-		@include breakpoints.mouse-and-bp-up(md) {
-			padding: defaults.$space-min 0;
-		}
-
-		@include selectors.state(".dropdown.show") {
-			display: block;
-		}
-	}
-
 	.dropdown-item {
 		display: block;
 		width: 100%;
@@ -133,5 +104,34 @@
 		@include breakpoints.mouse-and-bp-up(md) {
 			margin: defaults.$space-min 0;
 		}
+	}
+}
+
+.dropdown-menu {
+	background-color: defaults.$menu-bg;
+	box-shadow: defaults.$menu-box-shadow;
+	border-radius: defaults.$menu-border-radius;
+	z-index: defaults.$z-index-menu;
+	margin: defaults.$space-min 0;
+	display: none;
+	will-change: transform;
+	transform: translate3d(0, 0, 0);
+	top: 0;
+	left: 0; // required for correct popper js rendering
+
+	&:focus {
+		outline: none;
+	}
+
+	@include breakpoints.touch-or-bp-down(sm) {
+		padding: defaults.$space-xs 0;
+	}
+
+	@include breakpoints.mouse-and-bp-up(md) {
+		padding: defaults.$space-min 0;
+	}
+
+	&.show {
+		display: block;
 	}
 }

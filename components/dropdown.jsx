@@ -15,9 +15,11 @@ export const DropdownContext = createContext({});
 export const Dropdown = memo(props => {
 	const ref = useRef(null);
 	const isKeyboardTrigger = useRef(false);
-	const { disabled, isOpen, onToggle, className, placement = 'bottom-start', maxHeight, portal, ...rest } = props;
+	const pendingFocus = useRef(false);
+	const { disabled, isOpen, onToggle, className, placement = 'bottom-start', strategy: strategyProp, maxHeight, portal, ...rest } = props;
 	const wasOpen = usePrevious(isOpen);
 	const [isReady, setIsReady] = useState(false);
+	const [toggleCount, setToggleCount] = useState(0); // toggleCount is used to trigger an effect when isOpen doesn't change
 	const middleware = [flip({ fallbackAxisSideDirection: 'end' }), shift()];
 	// `maxHeight` can be a number in px or if is set to true, use the available height minus some padding
 	if (maxHeight) {
@@ -31,7 +33,7 @@ export const Dropdown = memo(props => {
 		}));
 	}
 
-	const { x, y, refs, strategy, update } = useFloating({ placement, middleware });
+	const { x, y, refs, strategy, update } = useFloating({ placement, strategy: strategyProp, middleware });
 
 	const handleToggle = useCallback(ev => {
 		if(disabled) {
@@ -44,8 +46,12 @@ export const Dropdown = memo(props => {
 			}
 
 			isKeyboardTrigger.current = ev.type === 'keydown';
+			if(!isOpen) {
+				pendingFocus.current = true;
+			}
 
 			setIsReady(false);
+			setToggleCount(c => c + 1);
 			onToggle?.(ev);
 			if(ev.key !== 'Tab') {
 				ev.stopPropagation();
@@ -76,21 +82,26 @@ export const Dropdown = memo(props => {
 
 	}, [onToggle, refs]);
 
-	useLayoutEffect(() => {
+	useEffect(() => {
 		if (isOpen !== wasOpen && typeof wasOpen !== 'undefined') {
 			update();
 			setIsReady(true);
+		} else if (isOpen) {
+			// toggle was requested, but isOpen didn't change - restore isReady
+			update();
+			setIsReady(true);
 		}
-	}, [isOpen, update, wasOpen]);
+	}, [isOpen, update, wasOpen, toggleCount]);
 
-	useEffect(() => {
-		if(isOpen && !wasOpen) {
+	useLayoutEffect(() => {
+		if(isOpen && isReady && pendingFocus.current) {
+			pendingFocus.current = false;
 			(refs.floating.current ?? ref.current.querySelector('[role="menu"]'))?.focus();
 		}
-		if(wasOpen && !isOpen) {
-			ref.current.querySelector('[aria-haspopup="true"]')?.focus();
+		if(!isOpen && !isReady) {
+			ref.current?.querySelector('[aria-haspopup="true"]')?.focus();
 		}
-	}, [isOpen, wasOpen, refs]);
+	}, [isOpen, isReady, refs]);
 
 	useEffect(() => {
 		if(isOpen) {
@@ -138,7 +149,8 @@ Dropdown.propTypes = {
 	modifiers: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.object), PropTypes.object]),
 	onToggle: PropTypes.func,
 	portal: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
-	placement: PropTypes.string
+	placement: PropTypes.string,
+	strategy: PropTypes.oneOf(['absolute', 'fixed'])
 };
 
 export const DropdownToggle = memo(forwardRef((props, ref) => {

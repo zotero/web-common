@@ -1,2 +1,13 @@
 node_modules
 .nyc_output
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/test/playwright/.cache/
+/test/playwright/.auth/
+
+# Playwright
+/playwright/.cache/
+/playwright/.auth/

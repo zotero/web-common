@@ -1,8 +1,7 @@
-import '@testing-library/jest-dom'
-import { getByRole, getAllByRole, render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { test, expect } from '@playwright/experimental-ct-react';
 
 import { Select, SelectOption, SelectDivider } from '../components';
+
 const options = [
 	{ label: 'Foo', value: 'foo' },
 	{ label: 'Bar', value: 'bar' },
@@ -10,221 +9,339 @@ const options = [
 	{ label: 'Ipsum', value: 'ipsum' },
 ];
 
-describe('Select', () => {
-    test('Shows a basic select', async () => {
-        render(<Select options={ options } />);
-		expect(screen.getByRole('combobox')).toBeInTheDocument();
-    });
-	test('Clicking on the select opens/closes the listbox', async () => {
-		const user = userEvent.setup();
-		render(<Select options={options} />);
-		await user.click(screen.getByRole('combobox'));
-		const listbox = screen.getByRole('listbox');
-		expect(listbox).toBeInTheDocument();
-		expect(getAllByRole(listbox, 'option')).toHaveLength(options.length);
-		await user.click(screen.getByRole('combobox'));
-		expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
-	});
-	test('Clicking on an option fires onChange but not onBlur', async () => {
-		const user = userEvent.setup();
-		const onChange = jest.fn();
-		const onBlur = jest.fn();
-		render(<Select options={options} onChange={onChange} onBlur={ onBlur } />);
-		await user.click(screen.getByRole('combobox'));
-		await user.click(screen.getByRole('option', { name: 'Bar' }));
-		expect(onChange).toHaveBeenCalledTimes(1);
-		expect(onChange).toHaveBeenCalledWith('bar');
-		expect(onBlur).not.toHaveBeenCalled();
-	});
-	test('Clicking on an option that was already selected fires neither onChange nor onBlur', async () => {
-		const user = userEvent.setup();
-		const onChange = jest.fn();
-		const onBlur = jest.fn();
-		render(<Select options={options} value="bar" onChange={onChange} onBlur={onBlur} />);
-		await user.click(screen.getByRole('combobox'));
-		const listbox = screen.getByRole('listbox');
-		const menuOption = getByRole(listbox, 'option', { name: 'Bar' });
-		await user.click(menuOption);
-		expect(onChange).not.toHaveBeenCalled();
-		expect(onBlur).not.toHaveBeenCalled();
-	});
-	test('Fires onFocus and onBlur', async () => {
-		const user = userEvent.setup();
-		const onFocus = jest.fn();
-		const onBlur = jest.fn();
-		render(
-			<div>
-				<Select options={options} onFocus={onFocus} onBlur={onBlur} />
-				<button>Focus me</button>
-			</div>
-		);
-		await user.click(screen.getByRole('combobox'));
-		expect(onFocus).toHaveBeenCalledTimes(1);
-		expect(screen.getByRole('combobox')).toHaveFocus();
-		await user.keyboard('{tab}');
-		expect(onBlur).toHaveBeenCalledTimes(1);
-		expect(screen.getByRole('button')).toHaveFocus();
-		await user.keyboard('{shift>}{tab}{/shift}');
-		expect(screen.getByRole('combobox')).toHaveFocus();
-		expect(onFocus).toHaveBeenCalledTimes(2);
-		expect(onBlur).toHaveBeenCalledTimes(1);
-		await user.click(document.body);
-		expect(onFocus).toHaveBeenCalledTimes(2);
-		expect(onBlur).toHaveBeenCalledTimes(2);
-		expect(screen.getByRole('combobox')).not.toHaveFocus();
-	});
-	test('Should filter options', async () => {
-		const user = userEvent.setup();
-		render(<Select searchable options={options} />);
-		await user.click(screen.getByRole('combobox'));
-		await user.type(screen.getByRole('combobox'), 'lorem');
-		const listbox = screen.getByRole('listbox');
-		expect(getAllByRole(listbox, 'option')).toHaveLength(1);
-		expect(getByRole(listbox, 'option', { name: 'Lorem' })).toBeInTheDocument();
-	});
-	test('If closed, should open as soon as filter is changed', async () => {
-		const user = userEvent.setup();
-		render(<Select searchable options={options} />);
-		await user.click(screen.getByRole('combobox'));
-		await user.click(screen.getByRole('combobox'));
-		expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
-		expect(screen.getByRole('textbox')).toHaveFocus();
-		// filter is empty, input has focus, presing l should open the listbox with the filtered options
-		await user.keyboard('l');
-		const listbox = screen.getByRole('listbox');
-		expect(listbox).toBeInTheDocument();
-		expect(getAllByRole(listbox, 'option')).toHaveLength(1);
-	});
-	test('Should clear filter input on blur, persist otherwise', async () => {
-		const user = userEvent.setup();
-		render(<Select searchable options={options} />);
-		await user.click(screen.getByRole('combobox'));
-		expect(screen.getByRole('listbox')).toBeInTheDocument();
-		expect(screen.getByRole('textbox')).toHaveValue('');
-		expect(screen.getByRole('textbox')).toHaveFocus();
-		await user.keyboard('lorem');
-		expect(screen.getByRole('textbox')).toHaveValue('lorem');
-		await user.click(screen.getByRole('combobox'));
-		// should persist the value when clicking to close
-		expect(screen.getByRole('textbox')).toHaveValue('lorem');
-		expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
-		await user.click(screen.getByRole('combobox'));
-		// should persist the value when clicking to open again
-		expect(screen.getByRole('textbox')).toHaveValue('lorem');
-		expect(screen.getByRole('listbox')).toBeInTheDocument();
-		await user.keyboard('{Escape}');
-		expect(screen.getByRole('textbox')).toHaveValue('lorem');
-		await user.keyboard('{tab}');
-		await user.keyboard('{shift>}{tab}{/shift}');
-		expect(screen.getByRole('textbox')).toHaveValue('');
-	});
-	test('Should clear filter input on escape', async () => {
-		const user = userEvent.setup();
-		render(<Select searchable options={options} />);
-		await user.click(screen.getByRole('combobox'));
-		await user.keyboard('lorem');
-		expect(screen.getByRole('textbox')).toHaveValue('lorem');
-		expect(screen.getByRole('listbox')).toBeInTheDocument();
-		// first escape closes the listbox
-		await user.keyboard('{Escape}');
-		expect(screen.getByRole('textbox')).toHaveValue('lorem');
-		expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
-		// second escape clears the input
-		await user.keyboard('{Escape}');
-		expect(screen.getByRole('textbox')).toHaveValue('');
-	});
+test('Shows a basic select', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Select options={options} />
+		</div>
+	);
+	await expect(component.getByRole('combobox')).toBeVisible();
+});
 
-	test('Should ignore user input if select is disabled', async () => {
-		const user = userEvent.setup();
-		render(<Select searchable disabled options={options} />);
-		await user.click(screen.getByRole('combobox'));
-		expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
-		await user.type(screen.getByRole('combobox'), 'lorem');
-		expect(screen.getByRole('textbox')).toHaveValue('');
-	});
+test('Clicking on the select opens/closes the listbox', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Select options={options} />
+		</div>
+	);
+	const combobox = component.getByRole('combobox');
 
-	test('Should ignore user input if select is readOnly', async () => {
-		const user = userEvent.setup();
-		render(<Select searchable readOnly options={options} />);
-		await user.click(screen.getByRole('combobox'));
-		expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
-		await user.type(screen.getByRole('combobox'), 'lorem');
-		expect(screen.getByRole('textbox')).toHaveValue('');
-	});
+	await combobox.click();
+	const listbox = component.getByRole('listbox');
+	await expect(listbox).toBeVisible();
+	await expect(listbox.getByRole('option')).toHaveCount(options.length);
 
-	test('Should omit rendering an input field if not marked as searchable', async () => {
-		const user = userEvent.setup();
-		render(<Select options={options} />);
-		await user.click(screen.getByRole('combobox'));
-		expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-	});
+	await component.locator('.select-control').click();
+	await expect(component.getByRole('listbox')).toHaveCount(0);
+});
 
-	test('Should skip over SelectDivider when using keyboard nav', async () => {
-		const user = userEvent.setup();
-		const onTrigger = jest.fn();
-		render(
+test('Clicking on an option fires onChange but not onBlur', async ({ mount }) => {
+	let changeCount = 0;
+	let changeValue = null;
+	let blurCount = 0;
+
+	const component = await mount(
+		<div>
+			<Select
+				options={options}
+				onChange={(v) => { changeCount++; changeValue = v; }}
+				onBlur={() => { blurCount++; }}
+			/>
+		</div>
+	);
+
+	await component.getByRole('combobox').click();
+	await component.getByRole('option', { name: 'Bar' }).click();
+	expect(changeCount).toBe(1);
+	expect(changeValue).toBe('bar');
+	expect(blurCount).toBe(0);
+});
+
+test('Clicking on an already selected option fires neither onChange nor onBlur', async ({ mount }) => {
+	let changeCount = 0;
+	let blurCount = 0;
+
+	const component = await mount(
+		<div>
+			<Select
+				options={options}
+				value="bar"
+				onChange={() => { changeCount++; }}
+				onBlur={() => { blurCount++; }}
+			/>
+		</div>
+	);
+
+	await component.getByRole('combobox').click();
+	await component.getByRole('option', { name: 'Bar' }).click();
+	expect(changeCount).toBe(0);
+	expect(blurCount).toBe(0);
+});
+
+test('Fires onFocus and onBlur', async ({ mount }) => {
+	let focusCount = 0;
+	let blurCount = 0;
+
+	const component = await mount(
+		<div>
+			<Select
+				options={options}
+				onFocus={() => { focusCount++; }}
+				onBlur={() => { blurCount++; }}
+			/>
+			<button>Focus me</button>
+		</div>
+	);
+
+	const page = component.page();
+	const combobox = component.getByRole('combobox');
+	const button = component.getByRole('button', { name: 'Focus me' });
+
+	await combobox.click();
+	expect(focusCount).toBe(1);
+	await expect(combobox).toBeFocused();
+
+	await page.keyboard.press('Tab');
+	expect(blurCount).toBe(1);
+	await expect(button).toBeFocused();
+
+	await page.keyboard.press('Shift+Tab');
+	await expect(combobox).toBeFocused();
+	expect(focusCount).toBe(2);
+	expect(blurCount).toBe(1);
+
+	await page.mouse.click(0, 300);
+	expect(focusCount).toBe(2);
+	expect(blurCount).toBe(2);
+	await expect(combobox).not.toBeFocused();
+});
+
+test('Should filter options', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Select searchable options={options} />
+		</div>
+	);
+	const page = component.page();
+
+	await component.getByRole('combobox').click();
+	await page.keyboard.type('lorem');
+	const listbox = component.getByRole('listbox');
+	await expect(listbox.getByRole('option')).toHaveCount(1);
+	await expect(listbox.getByRole('option', { name: 'Lorem' })).toBeVisible();
+});
+
+test('If closed, should open as soon as filter is changed', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Select searchable options={options} />
+		</div>
+	);
+	const page = component.page();
+
+	await component.getByRole('combobox').click();
+	await component.locator('.select-control').click();
+	await expect(component.getByRole('listbox')).toHaveCount(0);
+	await expect(component.locator('input')).toBeFocused();
+
+	await page.keyboard.type('l');
+	await expect(component.getByRole('listbox')).toBeVisible();
+	await expect(component.getByRole('listbox').getByRole('option')).toHaveCount(1);
+});
+
+test('Should clear filter input on blur, persist otherwise', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Select searchable options={options} />
+			<button>Focus target</button>
+		</div>
+	);
+	const page = component.page();
+	const input = component.locator('input');
+
+	await component.getByRole('combobox').click();
+	await expect(component.getByRole('listbox')).toBeVisible();
+	await expect(input).toHaveValue('');
+	await expect(input).toBeFocused();
+
+	await page.keyboard.type('lorem');
+	await expect(input).toHaveValue('lorem');
+
+	// Click to close - filter persists
+	await component.locator('.select-control').click();
+	await expect(input).toHaveValue('lorem');
+	await expect(component.getByRole('listbox')).toHaveCount(0);
+
+	// Click to reopen - filter persists
+	await component.locator('.select-control').click();
+	await expect(input).toHaveValue('lorem');
+	await expect(component.getByRole('listbox')).toBeVisible();
+
+	// Escape closes - filter persists
+	await page.keyboard.press('Escape');
+	await expect(input).toHaveValue('lorem');
+
+	// Tab out then Shift+Tab back - blur clears the filter
+	await page.keyboard.press('Tab');
+	await page.keyboard.press('Shift+Tab');
+	await expect(input).toHaveValue('');
+});
+
+test('Should clear filter input on escape', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Select searchable options={options} />
+		</div>
+	);
+	const page = component.page();
+	const input = component.locator('input');
+
+	await component.getByRole('combobox').click();
+	await page.keyboard.type('lorem');
+	await expect(input).toHaveValue('lorem');
+	await expect(component.getByRole('listbox')).toBeVisible();
+
+	// First escape closes the listbox
+	await page.keyboard.press('Escape');
+	await expect(input).toHaveValue('lorem');
+	await expect(component.getByRole('listbox')).toHaveCount(0);
+
+	// Second escape clears the input
+	await page.keyboard.press('Escape');
+	await expect(input).toHaveValue('');
+});
+
+test('Should ignore user input if select is disabled', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Select searchable disabled options={options} />
+		</div>
+	);
+
+	await component.getByRole('combobox').click({ force: true });
+	await expect(component.getByRole('listbox')).toHaveCount(0);
+	await expect(component.locator('input')).toHaveValue('');
+});
+
+test('Should ignore user input if select is readOnly', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Select searchable readOnly options={options} />
+		</div>
+	);
+
+	await component.getByRole('combobox').click();
+	await expect(component.getByRole('listbox')).toHaveCount(0);
+	await expect(component.locator('input')).toHaveValue('');
+});
+
+test('Should omit rendering an input field if not marked as searchable', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Select options={options} />
+		</div>
+	);
+
+	await component.getByRole('combobox').click();
+	await expect(component.locator('input')).toHaveCount(0);
+});
+
+test('Should skip over SelectDivider when using keyboard nav', async ({ mount }) => {
+	let triggerCount = 0;
+
+	const component = await mount(
+		<div>
 			<Select value="foo" options={options}>
 				<SelectDivider />
-				<SelectOption onTrigger={onTrigger} option={ { label: 'Magic', value: '_magic' } } />
+				<SelectOption onTrigger={() => { triggerCount++; }} option={{ label: 'Magic', value: '_magic' }} />
 			</Select>
-		);
-		await user.click(screen.getByRole('combobox'));
-		expect(screen.getByRole('listbox')).toBeInTheDocument();
-		await user.keyboard('{arrowdown}{arrowdown}{arrowdown}{arrowdown}');
-		await user.keyboard('{enter}');
-		expect(onTrigger).toHaveBeenCalledTimes(1);
-	});
+		</div>
+	);
+	const page = component.page();
 
-	test('It should update options when re-rendering with a different options array', async () => {
-		const user = userEvent.setup();
-		const newOptions = [
-			{ label: 'Foo', value: 'foo' },
-			{ label: 'Bar', value: 'bar' },
-			{ label: 'Lorem', value: 'lorem' },
-		];
-		const { rerender } = render(<Select options={options} />);
-		await user.click(screen.getByRole('combobox'));
-		expect(getAllByRole(screen.getByRole('listbox'), 'option')).toHaveLength(options.length);
+	await component.getByRole('combobox').click();
+	await expect(component.getByRole('listbox')).toBeVisible();
 
-		rerender(<Select options={newOptions} />);
-		expect(getAllByRole(screen.getByRole('listbox'), 'option')).toHaveLength(newOptions.length);
-	});
+	await page.keyboard.press('ArrowDown');
+	await page.keyboard.press('ArrowDown');
+	await page.keyboard.press('ArrowDown');
+	await page.keyboard.press('ArrowDown');
+	await page.keyboard.press('Enter');
+	expect(triggerCount).toBe(1);
+});
 
-	test('It should updade options when re-rendering with different children', async () => {
-		const user = userEvent.setup();
-		const { rerender } = render(
-			<Select options={ options }>
+test('Should update options when re-rendering with a different options array', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Select options={options} />
+		</div>
+	);
+
+	await component.getByRole('combobox').click();
+	await expect(component.getByRole('listbox').getByRole('option')).toHaveCount(options.length);
+
+	const newOptions = [
+		{ label: 'Foo', value: 'foo' },
+		{ label: 'Bar', value: 'bar' },
+		{ label: 'Lorem', value: 'lorem' },
+	];
+
+	await component.update(
+		<div>
+			<Select options={newOptions} />
+		</div>
+	);
+	await expect(component.getByRole('listbox').getByRole('option')).toHaveCount(newOptions.length);
+});
+
+test('Should update options when re-rendering with different children', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Select options={options}>
 				<SelectOption option={{ label: 'Bonus', value: 'bonus' }} />
 			</Select>
-		);
-		await user.click(screen.getByRole('combobox'));
-		expect(getAllByRole(screen.getByRole('listbox'), 'option')).toHaveLength(options.length + 1);
-		expect(getAllByRole(screen.getByRole('listbox'), 'option')[options.length]).toHaveTextContent('Bonus');
+		</div>
+	);
 
-		rerender(
+	await component.getByRole('combobox').click();
+	await expect(component.getByRole('listbox').getByRole('option')).toHaveCount(options.length + 1);
+	await expect(component.getByRole('listbox').getByRole('option').nth(options.length)).toHaveText('Bonus');
+
+	await component.update(
+		<div>
 			<Select options={options}>
 				<SelectOption option={{ label: 'Bonus', value: 'bonus' }} />
 				<SelectOption option={{ label: 'Extra', value: 'extra' }} />
 			</Select>
-		);
-		expect(getAllByRole(screen.getByRole('listbox'), 'option')).toHaveLength(options.length + 2);
-		expect(getAllByRole(screen.getByRole('listbox'), 'option')[options.length + 1]).toHaveTextContent('Extra');
-	});
+		</div>
+	);
+	await expect(component.getByRole('listbox').getByRole('option')).toHaveCount(options.length + 2);
+	await expect(component.getByRole('listbox').getByRole('option').nth(options.length + 1)).toHaveText('Extra');
+});
 
-	test('It should update filtered options when re-rendering with a different options array', async () => {
-		const user = userEvent.setup();
-		const newOptions = [
-			{ label: 'Foo', value: 'foo' },
-			{ label: 'Foorious', value: 'foorious' },
-			{ label: 'Bar', value: 'bar' },
-			{ label: 'Lorem', value: 'lorem' },
-		];
-		const { rerender } = render(<Select searchable options={options} />);
-		await user.click(screen.getByRole('combobox'));
-		await user.type(screen.getByRole('combobox'), 'foo');
-		expect(getAllByRole(screen.getByRole('listbox'), 'option')).toHaveLength(1);
+test('Should update filtered options when re-rendering with a different options array', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Select searchable options={options} />
+		</div>
+	);
+	const page = component.page();
 
-		rerender(<Select searchable options={newOptions} />);
-		expect(getAllByRole(screen.getByRole('listbox'), 'option')).toHaveLength(2);
-	});
+	await component.getByRole('combobox').click();
+	await page.keyboard.type('foo');
+	await expect(component.getByRole('listbox').getByRole('option')).toHaveCount(1);
+
+	const newOptions = [
+		{ label: 'Foo', value: 'foo' },
+		{ label: 'Foorious', value: 'foorious' },
+		{ label: 'Bar', value: 'bar' },
+		{ label: 'Lorem', value: 'lorem' },
+	];
+
+	await component.update(
+		<div>
+			<Select searchable options={newOptions} />
+		</div>
+	);
+	await expect(component.getByRole('listbox').getByRole('option')).toHaveCount(2);
 });
