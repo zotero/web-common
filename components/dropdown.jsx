@@ -105,11 +105,11 @@ export const Dropdown = memo(props => {
 			pendingFocus.current = false;
 			(refs.floating.current ?? ref.current.querySelector('[role="menu"]'))?.focus();
 		}
-		if (!isOpen && !isReady && pendingReturnFocus.current) {
+		if (wasOpen && !isOpen && !isReady && pendingReturnFocus.current) {
 			pendingReturnFocus.current = false;
 			ref.current?.querySelector('[aria-haspopup="true"]')?.focus();
 		}
-	}, [isOpen, isReady, refs]);
+	}, [isOpen, isReady, refs, wasOpen]);
 
 	useEffect(() => {
 		if (isOpen) {
