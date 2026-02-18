@@ -11,15 +11,15 @@
 			top: 0,
 			right: auto,
 			bottom: auto,
-			left: if($start, $start, 0),
+			left: if(sass($start): $start; else: 0),
 			direction: to bottom,
 			position: 0 0,
 			size: 100% 1px,
-			width: calc(100% - #{if($start, $start, 0px)} - #{if($end, $end, 0px)}),
+			width: calc(100% - #{if(sass($start): $start; else: 0px)} - #{if(sass($end): $end; else: 0px)}),
 			height: 1px
 		),
 		right: (
-			top: if($start, $start, 0),
+			top: if(sass($start): $start; else: 0),
 			right: 0,
 			bottom: auto,
 			left: auto,
@@ -27,21 +27,21 @@
 			position: right 0 top 0,
 			size: 1px 100%,
 			width: 1px,
-			height: calc(100% - #{if($start, $start, 0px)} - #{if($end, $end, 0px)})
+			height: calc(100% - #{if(sass($start): $start; else: 0px)} - #{if(sass($end): $end; else: 0px)})
 		),
 		bottom: (
 			top: auto,
 			right: auto,
 			bottom: 0,
-			left: if($start, $start, 0),
+			left: if(sass($start): $start; else: 0),
 			direction: to top,
 			position: left 0 bottom 0,
 			size: 100% 1px,
-			width: calc(100% - #{if($start, $start, 0px)} - #{if($end, $end, 0px)}),
+			width: calc(100% - #{if(sass($start): $start; else: 0px)} - #{if(sass($end): $end; else: 0px)}),
 			height: 1px
 		),
 		left: (
-			top: if($start, $start, 0),
+			top: if(sass($start): $start; else: 0),
 			right: auto,
 			bottom: auto,
 			left: 0,
@@ -49,7 +49,7 @@
 			position: 0 0,
 			size: 1px 100%,
 			width: 1px,
-			height: calc(100% - #{if($start, $start, 0px)} - #{if($end, $end, 0px)})
+			height: calc(100% - #{if(sass($start): $start; else: 0px)} - #{if(sass($end): $end; else: 0px)})
 		)
 	);
 	$top: map.get(map.get($specs, $side), top);
@@ -61,7 +61,7 @@
 	$size: map.get(map.get($specs, $side), size);
 	$width: map.get(map.get($specs, $side), width);
 	$height: map.get(map.get($specs, $side), height);
-	$pseudo-element: if($side == top or $side == left, "&::before", "&::after");
+	$pseudo-element: if(sass($side == top or $side == left): "&::before"; else: "&::after");
 
 	position: relative;
 
@@ -89,7 +89,7 @@
 
 @mixin hairline-disabled($sides...) {
 	@each $side in $sides {
-		$pseudo-element: if($side == top or $side == left, "&::before", "&::after");
+		$pseudo-element: if(sass($side == top or $side == left): "&::before"; else: "&::after");
 
 		#{$pseudo-element} {
 			content: none;
