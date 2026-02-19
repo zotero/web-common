@@ -208,7 +208,7 @@ const useFocusManager = (ref, { initialQuerySelector = null, isCarousel = true, 
 			}
 		}
 
-		const candidates = Array.from(ref.current.querySelectorAll(`[tabIndex="${targetTabIndex}"]:not([disabled])`));
+		const candidates = getTabbables();
 		if(lastFocused.current !== null && candidates.includes(lastFocused.current)) {
 			lastFocused.current.focus();
 			return true;
@@ -219,7 +219,7 @@ const useFocusManager = (ref, { initialQuerySelector = null, isCarousel = true, 
 			candidates[0].focus({ preventScroll });
 			return true;
 		}
-	}, [ref, initialQuerySelector]);
+	}, [getTabbables, ref, initialQuerySelector]);
 
 	const receiveBlur = useCallback(ev => {
 		// ignore blurs to self and descendants
