@@ -1,4 +1,8 @@
-# Zotero Web Common
+[![CI](https://github.com/zotero/web-common/actions/workflows/ci.yml/badge.svg)](https://github.com/zotero/web-common/actions/workflows/ci.yml)
+
+Zotero Web Common
+===========
+
 A set of tree-shakeable utilities, hooks and React components used throught Zotero web applications.
 
 ## Usage
