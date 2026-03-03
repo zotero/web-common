@@ -209,14 +209,14 @@ const useFocusManager = (ref, { initialQuerySelector = null, isCarousel = true, 
 			}
 
 			if(lastFocused.current) {
-				lastFocused.current.focus();
+				lastFocused.current.focus({ preventScroll });
 				return true;
 			}
 		}
 
 		const candidates = getTabbables();
 		if(lastFocused.current !== null && candidates.includes(lastFocused.current)) {
-			lastFocused.current.focus();
+			lastFocused.current.focus({ preventScroll });
 			return true;
 		} else if(ev.target !== ev.currentTarget && candidates.includes(ev.target)) {
 			// keep the focus on the candidate pressed

@@ -103,7 +103,7 @@ export const Dropdown = memo(props => {
 	useLayoutEffect(() => {
 		if (isOpen && isReady && pendingFocus.current) {
 			pendingFocus.current = false;
-			(refs.floating.current ?? ref.current.querySelector('[role="menu"]'))?.focus();
+			(refs.floating.current ?? ref.current.querySelector('[role="menu"]'))?.focus({ preventScroll: true });
 		}
 		if (wasOpen && !isOpen && pendingReturnFocus.current) {
 			pendingReturnFocus.current = false;
@@ -118,7 +118,7 @@ export const Dropdown = memo(props => {
 					// where the toggle only appears on focus/hover and the dropdown-menu is portalled
 					// (e.g., the collections-tree "More" dropdown in the web library)
 					toggle.style.setProperty('visibility', 'visible');
-					toggle.focus();
+					toggle.focus({ preventScroll: true });
 					toggle.style.removeProperty('visibility');
 				}
 			}
@@ -267,7 +267,7 @@ export const DropdownMenu = memo(props => {
 			ev.stopPropagation();
 			return;
 		}
-		receiveFocus(ev);
+		receiveFocus(ev, { preventScroll: true });
 	}, [receiveFocus]);
 
 	useEffect(() => {
