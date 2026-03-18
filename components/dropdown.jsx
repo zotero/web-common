@@ -2,7 +2,6 @@ import {
 	createContext, forwardRef, memo, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState,
 } from 'react';
 import {createPortal} from 'react-dom';
-import PropTypes from 'prop-types';
 import {flip, shift, size, useFloating} from '@floating-ui/react-dom';
 import cx from 'classnames';
 
@@ -165,19 +164,6 @@ export const Dropdown = memo(props => {
 
 Dropdown.displayName = 'Dropdown';
 
-Dropdown.propTypes = {
-	children: PropTypes.node,
-	className: PropTypes.string,
-	disabled: PropTypes.bool,
-	isOpen: PropTypes.bool,
-	maxHeight: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]),
-	modifiers: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.object), PropTypes.object]),
-	onToggle: PropTypes.func,
-	portal: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
-	placement: PropTypes.string,
-	strategy: PropTypes.oneOf(['absolute', 'fixed'])
-};
-
 export const DropdownToggle = memo(forwardRef((props, ref) => {
 	const {className, tabIndex, title, onKeyDown, onClick, ...rest} = props;
 	const Tag = props.tag || Button;
@@ -221,16 +207,6 @@ export const DropdownToggle = memo(forwardRef((props, ref) => {
 }));
 
 DropdownToggle.displayName = 'DropdownToggle';
-
-DropdownToggle.propTypes = {
-	tag: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
-	children: PropTypes.node,
-	className: PropTypes.string,
-	onClick: PropTypes.func,
-	onKeyDown: PropTypes.func,
-	tabIndex: PropTypes.number,
-	title: PropTypes.string,
-};
 
 export const DropdownMenu = memo(props => {
 	const {className, onKeyDown: onKeyDownProp, ...rest} = props;
@@ -309,16 +285,6 @@ export const DropdownMenu = memo(props => {
 
 DropdownMenu.displayName = 'DropdownMenu';
 
-DropdownMenu.propTypes = {
-	children: PropTypes.node,
-	className: PropTypes.string,
-	isOpen: PropTypes.bool,
-	keepOpenOnInteraction: PropTypes.bool,
-	onKeyDown: PropTypes.func,
-	right: PropTypes.bool,
-	tabIndex: PropTypes.string
-};
-
 export const DropdownItem = memo(props => {
 	const ref = useRef(null);
 	const {children, className, onClick, disabled = false, role = 'menuitem', tag, divider, ...rest} = props;
@@ -379,16 +345,6 @@ export const DropdownItem = memo(props => {
 
 DropdownItem.displayName = 'DropdownItem';
 
-DropdownItem.propTypes = {
-	disabled: PropTypes.bool,
-	divider: PropTypes.bool,
-	role: PropTypes.string,
-	children: PropTypes.node,
-	className: PropTypes.string,
-	onClick: PropTypes.func,
-	tag: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
-};
-
 export const UncontrolledDropdown = memo(props => {
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -408,8 +364,4 @@ export const UncontrolledDropdown = memo(props => {
 });
 
 UncontrolledDropdown.displayName = 'UncontrolledDropdown';
-
-UncontrolledDropdown.propTypes = {
-	children: PropTypes.node,
-}
 

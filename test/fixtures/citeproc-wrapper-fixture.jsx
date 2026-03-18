@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import CSL from 'citeproc';
 
@@ -45,11 +44,4 @@ export const CiteprocWrapperFixture = ({ style = mlaStyle, skipErrorChecking = f
 			{error === null && result === null && <div data-testid="loading">Loading...</div>}
 		</div>
 	);
-};
-
-CiteprocWrapperFixture.propTypes = {
-	items: PropTypes.array,
-	mockBibliography: PropTypes.array,
-	skipErrorChecking: PropTypes.bool,
-	style: PropTypes.string,
 };

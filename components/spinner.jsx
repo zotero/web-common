@@ -1,5 +1,4 @@
 import { memo } from 'react';
-import PropTypes from 'prop-types';
 import { Icon } from './icon';
 
 export const Spinner = memo(props => (
@@ -7,7 +6,3 @@ export const Spinner = memo(props => (
 ));
 
 Spinner.displayName = 'Spinner';
-
-Spinner.propTypes = {
-	className: PropTypes.string,
-}

@@ -1,5 +1,4 @@
 import cx from 'classnames';
-import PropTypes from 'prop-types';
 import { forwardRef, memo } from 'react';
 
 const Button = memo(forwardRef((props, ref) => {
@@ -19,11 +18,5 @@ const Button = memo(forwardRef((props, ref) => {
 }));
 
 Button.displayName = "Button";
-
-Button.propTypes = {
-	children: PropTypes.node,
-	className: PropTypes.string,
-	icon: PropTypes.bool
-};
 
 export { Button };

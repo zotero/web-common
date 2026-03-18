@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import { useCallback, useRef } from 'react';
 
 import { useFocusManager } from '../../hooks';
@@ -52,11 +51,4 @@ export const FocusManagerFixture = ({ initialQuerySelector, isCarousel = true, f
 			<button data-testid="outside">Outside</button>
 		</div>
 	);
-};
-
-FocusManagerFixture.propTypes = {
-	disableFirst: PropTypes.bool,
-	focusByQuery: PropTypes.string,
-	initialQuerySelector: PropTypes.string,
-	isCarousel: PropTypes.bool,
 };

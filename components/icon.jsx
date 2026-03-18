@@ -1,5 +1,4 @@
 import { memo, forwardRef, useContext, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { useForceUpdate } from '../hooks';
 import { pick } from '../utils';
@@ -95,19 +94,3 @@ export const Icon = memo(forwardRef((props, ref) => {
 }));
 
 Icon.displayName = 'Icon';
-
-Icon.propTypes = {
-	className: PropTypes.string,
-	color: PropTypes.string,
-	colorScheme: PropTypes.string,
-	height: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-	label: PropTypes.string,
-	role: PropTypes.string,
-	style: PropTypes.object,
-	symbol: PropTypes.string,
-	type: PropTypes.string.isRequired,
-	usePixelRatio: PropTypes.bool,
-	useColorScheme: PropTypes.bool,
-	viewBox: PropTypes.string,
-	width: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-};

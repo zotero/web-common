@@ -1,7 +1,6 @@
 import {
 	cloneElement, forwardRef, memo, useCallback, useImperativeHandle, useRef, useReducer, useEffect, useMemo, useId
 } from 'react';
-import PropTypes from 'prop-types';
 import cx from 'classnames';
 import deepEqual from 'deep-equal';
 
@@ -29,13 +28,6 @@ const SelectOption = memo(({ option, isSelected, isHighlighted, onMouseDown }) =
 });
 
 SelectOption.displayName = 'SelectOption';
-
-SelectOption.propTypes = {
-	isHighlighted: PropTypes.bool,
-	onMouseDown: PropTypes.func,
-	option: PropTypes.object,
-	isSelected: PropTypes.bool,
-};
 
 const SelectDivider = memo(() => <div className="select-option select-divider" />);
 
@@ -334,20 +326,5 @@ const Select = memo(forwardRef((props, ref) => {
 }));
 
 Select.displayName = 'Select';
-
-Select.propTypes = {
-	children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]),
-	className: PropTypes.string,
-	disabled: PropTypes.bool,
-	id: PropTypes.string,
-	onBlur: PropTypes.func,
-	onChange: PropTypes.func,
-	onFocus: PropTypes.func,
-	options: PropTypes.array,
-	readOnly: PropTypes.bool,
-	searchable: PropTypes.bool,
-	tabIndex: PropTypes.number,
-	value: PropTypes.string,
-};
 
 export { Select, SelectDivider, SelectOption };

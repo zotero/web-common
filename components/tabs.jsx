@@ -1,5 +1,4 @@
 import { cloneElement, forwardRef, memo, useCallback, useRef } from 'react';
-import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { useFocusManager } from '../hooks';
 import { mapChildren, noop, pick } from '../utils';
@@ -61,18 +60,6 @@ const Tab = memo(props => {
 
 Tab.displayName = 'Tab';
 
-Tab.propTypes = {
-	activateOnFocus: PropTypes.bool,
-	asSections: PropTypes.bool,
-	children: PropTypes.node,
-	focusNext: PropTypes.func,
-	focusPrev: PropTypes.func,
-	isActive: PropTypes.bool,
-	isDisabled: PropTypes.bool,
-	onActivate: PropTypes.func.isRequired,
-	resetLastFocused: PropTypes.func,
-};
-
 
 const Tabs = memo(({ asSections, children, justified, compact, activateOnFocus, ...rest }) => {
 	const ref = useRef(null);
@@ -104,15 +91,6 @@ const Tabs = memo(({ asSections, children, justified, compact, activateOnFocus, 
 
 Tabs.displayName = 'Tabs';
 
-Tabs.propTypes = {
-	asSections: PropTypes.bool,
-	children: PropTypes.node,
-	className: PropTypes.string,
-	compact: PropTypes.bool,
-	justified: PropTypes.bool,
-	activateOnFocus: PropTypes.bool,
-};
-
 const TabPane = memo(forwardRef(({ children, isActive, isLoading, className, ...rest }, ref) => (
 	<div ref={ref}
 		role={ 'role' in rest ? rest.role : 'tabpanel' }
@@ -126,13 +104,6 @@ const TabPane = memo(forwardRef(({ children, isActive, isLoading, className, ...
 )));
 
 TabPane.displayName = 'TabPane';
-
-TabPane.propTypes = {
-	children: PropTypes.oneOfType([PropTypes.element, PropTypes.array, PropTypes.string]),
-	className: PropTypes.string,
-	isActive: PropTypes.bool,
-	isLoading: PropTypes.bool,
-};
 
 
 export {
