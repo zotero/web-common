@@ -49,6 +49,9 @@ export default [
 			...(reactPlugin.configs?.recommended?.rules ?? {}),
 			...(reactPlugin.configs?.["jsx-runtime"]?.rules ?? {}),
 
+			// Prop types validation handled by TypeScript definitions
+			"react/prop-types": "off",
+
 			// React Hooks recommended
 			"react-hooks/rules-of-hooks": "error",
 			"react-hooks/exhaustive-deps": "warn",
