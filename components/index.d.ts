@@ -5,4 +5,6 @@ export * from './menu-entry';
 export * from './select';
 export * from './spinner';
 export * from './static';
+export * from './switcher';
+export * from './color-scheme-switcher';
 export * from './tabs';

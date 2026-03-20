@@ -1,0 +1,85 @@
+@use "abstracts/defaults";
+
+.switcher {
+	display: inline-flex;
+	align-items: center;
+	position: relative;
+	width: defaults.$switcher-width;
+	height: defaults.$switcher-height;
+	padding: 0;
+	border: defaults.$border-width solid defaults.$switcher-border-color;
+	border-radius: defaults.$switcher-border-radius;
+	background: defaults.$switcher-bg;
+	cursor: pointer;
+	appearance: none;
+	transition: background-color defaults.$switcher-transition, border-color defaults.$switcher-transition;
+
+	&:focus-visible {
+		outline: defaults.$outline-width solid defaults.$outline-color;
+		outline-offset: defaults.$outline-offset;
+	}
+
+	&.checked {
+		background: defaults.$switcher-checked-bg;
+		border-color: defaults.$switcher-checked-border-color;
+	}
+}
+
+.switcher-knob {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	left: defaults.$switcher-knob-offset;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: defaults.$switcher-knob-size;
+	height: defaults.$switcher-knob-size;
+	border-radius: 50%;
+	background: defaults.$switcher-knob-bg;
+	transition: left defaults.$switcher-transition, background-color defaults.$switcher-transition;
+
+	.checked > & {
+		left: defaults.$switcher-width - defaults.$switcher-knob-size - defaults.$switcher-knob-offset - (defaults.$border-width * 2);
+	}
+
+	.color-scheme-switcher.checked > & {
+		background: defaults.$switcher-checked-knob-bg;
+	}
+}
+
+.switcher-icon {
+	position: absolute;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: defaults.$switcher-icon-size;
+	height: defaults.$switcher-icon-size;
+	color: defaults.$switcher-icon-color;
+	transition: opacity defaults.$switcher-transition, color defaults.$switcher-transition;
+
+	.color-scheme-switcher.checked > .switcher-knob > & {
+		color: defaults.$switcher-checked-icon-color;
+	}
+
+	svg {
+		width: defaults.$switcher-icon-size;
+		height: defaults.$switcher-icon-size;
+	}
+}
+
+.switcher-icon-light {
+	opacity: 1;
+
+	.checked > .switcher-knob > & {
+		opacity: 0;
+	}
+}
+
+.switcher-icon-dark {
+	opacity: 0;
+
+	.checked > .switcher-knob > & {
+		opacity: 1;
+	}
+}

@@ -22,7 +22,6 @@ $shade-0: #fff !default;
 $shade-1: #f6f6f6 !default;
 $shade-2: #ebebeb !default;
 $shade-3: #ddd !default;
-$shade-4: #ccc !default;
 $shade-4: #bbb !default;
 $shade-5: #999 !default;
 $shade-6: #777 !default;
@@ -193,3 +192,20 @@ $tab-active-color: $secondary !default;
 $tab-inactive-color: $shade-8 !default;
 $tab-pane-heading-border-color: $shade-4 !default;
 $tab-pane-heading-bg: #f0f0f0 !default;
+
+// Switcher
+$switcher-width: 36px !default;
+$switcher-height: 20px !default;
+$switcher-knob-size: 14px !default;
+$switcher-knob-offset: 3px !default;
+$switcher-border-radius: 10px !default;
+$switcher-bg: $shade-4 !default;
+$switcher-checked-bg: $secondary !default;
+$switcher-knob-bg: $shade-0 !default;
+$switcher-checked-knob-bg: $shade-7 !default;
+$switcher-border-color: $shade-5 !default;
+$switcher-checked-border-color: $secondary !default;
+$switcher-transition: 0.15s cubic-bezier(0.4, 0, 0.2, 1) !default;
+$switcher-icon-size: 10px !default;
+$switcher-icon-color: $shade-6 !default;
+$switcher-checked-icon-color: $shade-4 !default;
