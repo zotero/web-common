@@ -1,15 +1,17 @@
 import {
-	cloneElement, forwardRef, memo, useCallback, useImperativeHandle, useRef, useReducer, useEffect, useMemo, useId
+	cloneElement, forwardRef, memo, useCallback, useEffect, useId, useImperativeHandle, useMemo, useReducer, useRef
 } from 'react';
 import cx from 'classnames';
-import deepEqual from 'deep-equal';
+import {flattenChildren, mapChildren} from '../utils/react';
+import {pick} from '../utils/immutable';
+import {scrollIntoViewIfNeeded} from '../utils/dom';
+import {usePrevious} from '../hooks';
 
-import { flattenChildren, mapChildren } from '../utils/react';
-import { pick } from '../utils/immutable';
-import { scrollIntoViewIfNeeded } from '../utils/dom';
-import { usePrevious } from '../hooks';
+const optionsEqual = (a, b) => (
+	a.length === b.length && a.every((o, i) => o.value === b[i].value && o.label === b[i].label)
+);
 
-const SelectOption = memo(({ option, isSelected, isHighlighted, onMouseDown }) => {
+const SelectOption = memo(({option, isSelected, isHighlighted, onMouseDown}) => {
 	return (
 		<div
 			className={cx('select-option', {
@@ -29,47 +31,51 @@ const SelectOption = memo(({ option, isSelected, isHighlighted, onMouseDown }) =
 
 SelectOption.displayName = 'SelectOption';
 
-const SelectDivider = memo(() => <div className="select-option select-divider" />);
+const SelectDivider = memo(() => <div className="select-option select-divider"/>);
 
 SelectDivider.displayName = 'SelectDivider';
 
 const selectReducer = (state, action) => {
-	switch(action.type) {
+	switch (action.type) {
 		case 'open':
-			return { ...state, isOpen: true, isFocused: true, highlighted: action.value };
+			return {...state, isOpen: true, isFocused: true, highlighted: action.value};
 		case 'close':
-			return { ...state, isOpen: false };
+			return {...state, isOpen: false};
 		case 'select':
-			return { ...state, isOpen: false, filter: '', filteredOptions: action.options };
+			return {...state, isOpen: false, filter: '', filteredOptions: action.options};
 		case 'focus':
-			return { ...state, isFocused: true };
+			return {...state, isFocused: true};
 		case 'blur':
-			return { ...state, isFocused: false, isOpen: false, filter: '', filteredOptions: action.options };
+			return {...state, isFocused: false, isOpen: false, filter: '', filteredOptions: action.options};
 		case 'highlight':
-			return { ...state, highlighted: action.value, isKeyboard: true};
+			return {...state, highlighted: action.value, isKeyboard: true};
 		case 'highlight-reset':
-			return { ...state, highlighted: null };
+			return {...state, highlighted: null};
 		case 'filter': {
 			const newOptions = action.options.filter(o => o.label.toLowerCase().includes(action.value.toLowerCase()));
 			const highlighted = newOptions.length && !newOptions.some(o => o.value === state.highlighted) ? newOptions[0].value : state.highlighted;
-			return { ...state, filter: action.value, filteredOptions: newOptions, highlighted, isOpen: true, isKeyboard: true };
+			return {
+				...state, filter: action.value, filteredOptions: newOptions, highlighted, isOpen: true, isKeyboard: true
+			};
 		}
 		case 'filter-clear':
-			return { ...state, filter: '', filteredOptions: action.options };
+			return {...state, filter: '', filteredOptions: action.options};
 		case 'mouse':
-			return { ...state, isKeyboard: false };
+			return {...state, isKeyboard: false};
 		default:
 			return state;
 	}
 };
 
 const Select = memo(forwardRef((props, ref) => {
-	const { children, className, disabled, onBlur, onChange, onFocus, options, readOnly, searchable,
-		tabIndex = 0, value, ...rest } = props;
+	const {
+		children, className, disabled, onBlur, onChange, onFocus, options, readOnly, searchable,
+		tabIndex = 0, value, ...rest
+	} = props;
 
 	const fallbackID = useId();
 	const id = rest.id || `select-${fallbackID}`;
-	const valueLabel = useMemo(() => (options.find(o => o.value === value) || (value !== null ? { label: value } : false) || options[0] || {}).label, [options, value]);
+	const valueLabel = useMemo(() => (options.find(o => o.value === value) || (value !== null ? {label: value} : false) || options[0] || {}).label, [options, value]);
 	const valueIndex = useMemo(() => options.findIndex(o => o.value === value), [options, value]);
 	const prevOptions = usePrevious(options);
 
@@ -87,7 +93,7 @@ const Select = memo(forwardRef((props, ref) => {
 	const mergedOptions = useMemo(() => {
 		const childrenOptions = flattenChildren(children)
 			.filter(c => c.type === SelectOption)
-			.map(c => ({ ...c.props.option, component: c }));
+			.map(c => ({...c.props.option, component: c}));
 		return [...state.filteredOptions, ...childrenOptions];
 	}, [children, state.filteredOptions]);
 
@@ -106,7 +112,7 @@ const Select = memo(forwardRef((props, ref) => {
 
 	const handleFocus = useCallback(ev => {
 		if (!disabled && !readOnly) {
-			dispatchState({ type: 'focus' });
+			dispatchState({type: 'focus'});
 			if (searchable) {
 				selectRef.current.tabIndex = -2;
 				inputRef.current?.focus();
@@ -128,7 +134,7 @@ const Select = memo(forwardRef((props, ref) => {
 			onBlur(ev)
 		}
 
-		dispatchState({ type: 'blur', options });
+		dispatchState({type: 'blur', options});
 	}, [onBlur, options, tabIndex]);
 
 	const handleClick = useCallback(ev => {
@@ -136,9 +142,9 @@ const Select = memo(forwardRef((props, ref) => {
 			return;
 		}
 		if (state.isOpen) {
-			dispatchState({ type: 'close' });
+			dispatchState({type: 'close'});
 		} else if (!disabled && !readOnly) {
-			dispatchState({ type: 'open', value: valueIndex === -1 ? null : options[valueIndex].value });
+			dispatchState({type: 'open', value: valueIndex === -1 ? null : options[valueIndex].value});
 
 		}
 	}, [disabled, options, readOnly, state.isOpen, valueIndex]);
@@ -146,7 +152,7 @@ const Select = memo(forwardRef((props, ref) => {
 	// using mouse down to prevent blur firing first
 	const handleItemMouseDown = useCallback(ev => {
 		selectRef.current.focus();
-		dispatchState({ type: 'select', options });
+		dispatchState({type: 'select', options});
 		ev.stopPropagation();
 		ev.preventDefault();
 		const newValue = ev.currentTarget.dataset.optionValue;
@@ -182,23 +188,23 @@ const Select = memo(forwardRef((props, ref) => {
 		}
 
 		if (!state.isOpen && (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowDown')) {
-			dispatchState({ type: 'open', value: valueIndex === -1 ? null : options[valueIndex].value });
+			dispatchState({type: 'open', value: valueIndex === -1 ? null : options[valueIndex].value});
 			ev.preventDefault();
 		} else if (state.isOpen && ev.key === 'Escape') {
 			inputRef.current?.focus();
-			dispatchState({ type: 'close' });
+			dispatchState({type: 'close'});
 			ev.stopPropagation();
 		} else if (!state.isOpen && ev.key === 'Escape') {
-			dispatchState({ type: 'filter-clear', options });
+			dispatchState({type: 'filter-clear', options});
 		} else if (state.isOpen && ev.key === 'ArrowDown') {
-			dispatchState({ type: 'highlight', value: mergedOptions[getNextIndex(1)]?.value });
+			dispatchState({type: 'highlight', value: mergedOptions[getNextIndex(1)]?.value});
 			ev.preventDefault();
 		} else if (state.isOpen && ev.key === 'ArrowUp') {
-			dispatchState({ type: 'highlight', value: mergedOptions[getNextIndex(-1)]?.value });
+			dispatchState({type: 'highlight', value: mergedOptions[getNextIndex(-1)]?.value});
 			ev.preventDefault();
 		} else if (state.isOpen && (ev.key === 'Enter' || ev.key === ' ')) {
 			inputRef.current?.focus();
-			dispatchState({ type: 'select', options });
+			dispatchState({type: 'select', options});
 			const targetOption = mergedOptions.find(mo => mo.value === state.highlighted);
 			if (targetOption && targetOption.component && targetOption.component.props.onTrigger) {
 				targetOption.component.props.onTrigger(ev);
@@ -210,19 +216,19 @@ const Select = memo(forwardRef((props, ref) => {
 	}, [disabled, getNextIndex, mergedOptions, onChange, options, readOnly, state.highlighted, state.isOpen, value, valueIndex]);
 
 	const handleMouseMove = useCallback(() => {
-		dispatchState({ type: 'mouse' });
+		dispatchState({type: 'mouse'});
 	}, []);
 
 	const handleSearchInput = useCallback(ev => {
 		const newFilter = ev.currentTarget.value;
 		if (newFilter !== state.filter) {
-			dispatchState({ type: 'filter', value: newFilter, options });
+			dispatchState({type: 'filter', value: newFilter, options});
 		}
 	}, [options, state.filter]);
 
 	useEffect(() => {
 		if (!state.isOpen && wasOpen) {
-			dispatchState({ type: 'highlight-reset' });
+			dispatchState({type: 'highlight-reset'});
 		}
 		if (!wasOpen && state.isOpen) {
 			const highlightedEl = selectRef.current && selectRef.current.querySelector(`[data-option-value="${state.highlighted}"]`);
@@ -242,11 +248,11 @@ const Select = memo(forwardRef((props, ref) => {
 	}, [prevHighlighted, state.highlighted, state.isOpen]);
 
 	useEffect(() => {
-		if(typeof(prevOptions) !== 'undefined' && !deepEqual(options, prevOptions)) {
-			if(state.filter.length) {
-				dispatchState({ type: 'filter', value: state.filter, options });
+		if (typeof (prevOptions) !== 'undefined' && !optionsEqual(options, prevOptions)) {
+			if (state.filter.length) {
+				dispatchState({type: 'filter', value: state.filter, options});
 			} else {
-				dispatchState({ type: 'filter-clear', options });
+				dispatchState({type: 'filter-clear', options});
 			}
 		}
 	}, [options, prevOptions, state.filter]);
@@ -256,7 +262,8 @@ const Select = memo(forwardRef((props, ref) => {
 			{...pick(rest, p => p.startsWith('data-') || p.startsWith('aria-'))}
 			className={cx('select-component', className, {
 				'is-searchable': searchable, 'is-focused': state.isFocused, 'has-value': !!value,
-				'is-keyboard': state.isKeyboard, 'is-mouse': !state.isKeyboard, 'is-disabled': disabled, 'is-readonly': readOnly
+				'is-keyboard': state.isKeyboard, 'is-mouse': !state.isKeyboard, 'is-disabled': disabled,
+				'is-readonly': readOnly
 			})}
 			id={id}
 			onBlur={handleBlur}
@@ -275,24 +282,24 @@ const Select = memo(forwardRef((props, ref) => {
 				<div className="select-multi-value-wrapper">
 					<div className="select-value">
 						{(!searchable || !state.filter.length) && (
-							<span className="select-value-label" >
+							<span className="select-value-label">
 								{valueLabel}
 							</span>
 						)}
 					</div>
 					{searchable && <div className="select-input">
-							<input
-								aria-controls={`${id}-menu`}
-								onChange={handleSearchInput}
-								onKeyDown={searchable ? handleKeyDown : null}
-								ref={inputRef}
-								tabIndex={-2}
-								value={state.filter}
-							/>
-					</div> }
+						<input
+							aria-controls={`${id}-menu`}
+							onChange={handleSearchInput}
+							onKeyDown={searchable ? handleKeyDown : null}
+							ref={inputRef}
+							tabIndex={-2}
+							value={state.filter}
+						/>
+					</div>}
 				</div>
 				<div className="select-arrow-container">
-					<span className="select-arrow" />
+					<span className="select-arrow"/>
 				</div>
 			</div>
 			{(state.isFocused && state.isOpen) && (
@@ -315,7 +322,10 @@ const Select = memo(forwardRef((props, ref) => {
 						)}
 						{mapChildren(children, child =>
 							child && child.type === SelectOption ?
-								cloneElement(child, { isHighlighted: state.highlighted === child.props?.option?.value, isSelected: value === child.props?.option?.value, onMouseDown: handleItemMouseDown }) :
+								cloneElement(child, {
+									isHighlighted: state.highlighted === child.props?.option?.value,
+									isSelected: value === child.props?.option?.value, onMouseDown: handleItemMouseDown
+								}) :
 								child
 						)}
 					</div>
@@ -327,4 +337,4 @@ const Select = memo(forwardRef((props, ref) => {
 
 Select.displayName = 'Select';
 
-export { Select, SelectDivider, SelectOption };
+export {Select, SelectDivider, SelectOption};

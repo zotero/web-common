@@ -345,3 +345,39 @@ test('Should update filtered options when re-rendering with a different options 
 	);
 	await expect(component.getByRole('listbox').getByRole('option')).toHaveCount(2);
 });
+
+test('Should re-apply filter when options change with matching labels', async ({ mount }) => {
+	const initialOptions = [
+		{ label: 'Apple', value: 'apple' },
+		{ label: 'Apricot', value: 'apricot' },
+		{ label: 'Banana', value: 'banana' },
+	];
+
+	const component = await mount(
+		<div>
+			<Select searchable options={initialOptions} />
+		</div>
+	);
+	const page = component.page();
+
+	await component.getByRole('combobox').click();
+	await page.keyboard.type('ap');
+	await expect(component.getByRole('listbox').getByRole('option')).toHaveCount(2);
+
+	// Update options -- one matching option removed, one new matching option added
+	const updatedOptions = [
+		{ label: 'Apple', value: 'apple' },
+		{ label: 'Banana', value: 'banana' },
+		{ label: 'Cape Gooseberry', value: 'cape-gooseberry' },
+	];
+
+	await component.update(
+		<div>
+			<Select searchable options={updatedOptions} />
+		</div>
+	);
+	// "ap" filter re-applied: "Apple" and "Cape Gooseberry" match
+	await expect(component.getByRole('listbox').getByRole('option')).toHaveCount(2);
+	await expect(component.getByRole('listbox').getByRole('option').nth(0)).toHaveText('Apple');
+	await expect(component.getByRole('listbox').getByRole('option').nth(1)).toHaveText('Cape Gooseberry');
+});
