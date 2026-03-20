@@ -19,7 +19,7 @@
 		outline-offset: defaults.$outline-offset;
 	}
 
-	&.checked {
+	&.checked:not(.color-scheme-switcher) {
 		background: defaults.$switcher-checked-bg;
 		border-color: defaults.$switcher-checked-border-color;
 	}
