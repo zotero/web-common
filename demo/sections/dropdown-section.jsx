@@ -29,6 +29,19 @@ export function DropdownSection() {
 				<p>Last action: { lastAction }</p>
 			</Section>
 
+			<Section title="Dropdown with Chevron">
+				<UncontrolledDropdown>
+					<DropdownToggle className="btn">
+						Options <span className="chevron" />
+					</DropdownToggle>
+					<DropdownMenu>
+						<DropdownItem onClick={ () => setLastAction('Cut') }>Cut</DropdownItem>
+						<DropdownItem onClick={ () => setLastAction('Copy') }>Copy</DropdownItem>
+						<DropdownItem onClick={ () => setLastAction('Paste') }>Paste</DropdownItem>
+					</DropdownMenu>
+				</UncontrolledDropdown>
+			</Section>
+
 			<Section title="Controlled Dropdown">
 				<Dropdown isOpen={ isOpen } onToggle={ handleToggle }>
 					<DropdownToggle className="btn">

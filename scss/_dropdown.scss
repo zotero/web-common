@@ -11,8 +11,13 @@
 			vertical-align: top;
 		}
 
-		[class*="icon-chevron"] {
-			transform: scaleY(-1);
+		.chevron {
+			display: inline-block;
+			width: defaults.$dropdown-chevron-size;
+			height: defaults.$dropdown-chevron-size;
+			background: currentColor;
+			mask: url(defaults.$dropdown-chevron) no-repeat center;
+			mask-size: contain;
 			vertical-align: -2px; // Works for btn-lg
 		}
 

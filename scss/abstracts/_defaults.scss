@@ -181,6 +181,9 @@ $editable-backdrop-hover-bg: #f0f0f0 !default;
 $spinner-color: $secondary !default;
 
 $select-chevron-size: 16px !default;
+$select-chevron: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpolygon points='11.293 6 8.5 8.793 5.707 6 5 6.707 8.5 10.207 12 6.707'/%3E%3C/svg%3E" !default;
+$dropdown-chevron-size: $select-chevron-size !default;
+$dropdown-chevron: $select-chevron !default;
 $select-value-padding-desktop: 0 ($input-btn-padding-x - 4px) + $space-md 0 $input-btn-padding-x !default;
 
 $tabs-height: $line-height-large + $space-min !default;

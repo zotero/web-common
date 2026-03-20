@@ -192,7 +192,7 @@ export const DropdownToggle = memo(forwardRef((props, ref) => {
 			title={title}
 			aria-expanded={isOpen}
 			aria-haspopup={true}
-			className={className}
+			className={cx('dropdown-toggle', className)}
 			onClick={handleClick}
 			onKeyDown={handleKeyDown}
 			ref={r => {
