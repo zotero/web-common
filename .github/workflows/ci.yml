@@ -10,7 +10,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v3
         with:
-          node-version: 'lts/jod'
+          node-version: 'lts/krypton'
       - run: npm install
       - run: npx playwright install --with-deps
       - run: npm test
