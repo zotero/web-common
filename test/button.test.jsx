@@ -13,6 +13,7 @@ test('Renders an accessible button', async ({ mount }) => {
 	await expect(button).toBeVisible();
 	await expect(button).toHaveClass(/btn/);
 	await expect(button).not.toHaveClass(/btn-icon/);
+	await expect(button).toHaveAttribute('type', 'button');
 });
 
 test('Renders an icon button', async ({ mount }) => {

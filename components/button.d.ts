@@ -4,6 +4,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 	children?: React.ReactNode;
 	className?: string;
 	icon?: boolean;
+	type?: 'button' | 'submit' | 'reset';
 }
 
 export const Button: React.ForwardRefExoticComponent<ButtonProps & React.RefAttributes<HTMLButtonElement>>;
