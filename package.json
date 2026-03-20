@@ -13,7 +13,8 @@
     "stylelint": "stylelint \"scss/**/*.scss\"",
     "lint": "run-p stylelint eslint",
     "test": "playwright test -c playwright-ct.config.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "start": "vite --config demo/vite.config.mjs"
   },
   "dependencies": {
     "@floating-ui/react-dom": "^2.1.7",

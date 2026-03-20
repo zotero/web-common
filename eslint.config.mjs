@@ -14,7 +14,7 @@ const sourceFiles = [
 
 export default [
 	// Only traverse source and test directories
-	{ignores: ["*.config.*", "icons/**", "modules/**", "playwright/**", "playwright-report/**", "scss/**"]},
+	{ignores: ["*.config.*", "demo/**", "icons/**", "modules/**", "playwright/**", "playwright-report/**", "scss/**"]},
 
 	// ESLint core recommended rules
 	{...js.configs.recommended, files: sourceFiles},
