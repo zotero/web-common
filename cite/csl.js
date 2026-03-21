@@ -48,12 +48,12 @@ const getStyleProperties = citationStyleXml => {
 	return stylePropertiesCache.get(citationStyleXml);
 }
 
-const fetchAndParseStyle = async styleName => {
+const fetchAndParseStyle = async (styleName, baseUrl = 'https://www.zotero.org/styles/') => {
 	let styleXml, styleProps;
 	if(stylesCache.has(styleName)) {
 		styleXml = stylesCache.get(styleName);
 	} else {
-		const url = `https://www.zotero.org/styles/${styleName}`;
+		const url = `${baseUrl}${styleName}`;
 		const response = await fetch(url);
 		if(!response.ok) {
 			throw new Error(`Failed to fetch ${styleName} from ${url}`);
@@ -65,10 +65,10 @@ const fetchAndParseStyle = async styleName => {
 	return { styleName, styleXml, styleProps }
 }
 
-const fetchAndParseIndependentStyle = async styleName => {
-	const { styleXml, styleProps } = await fetchAndParseStyle(styleName);
+const fetchAndParseIndependentStyle = async (styleName, baseUrl) => {
+	const { styleXml, styleProps } = await fetchAndParseStyle(styleName, baseUrl);
 	const { styleXml: parentStyleXml, styleProps: parentStyleProps } = (styleProps.parentStyleName ?
-		await fetchAndParseStyle(styleProps.parentStyleName) : {});
+		await fetchAndParseStyle(styleProps.parentStyleName, baseUrl) : {});
 
 	return { styleName, styleXml, parentStyleXml, styleProps: {
 		...styleProps,
