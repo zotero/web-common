@@ -7,6 +7,8 @@ import Utilities_Date from '../modules/zotero-utilities/date.js';
 import Utilities from '../modules/zotero-utilities/utilities.js';
 import dateFormats from '../modules/zotero-utilities/resource/dateFormats.json';
 
+import { normalizeLocale } from '../utils/locale.js';
+
 let Zotero = null;
 
 const getZotero = () => {
@@ -17,10 +19,15 @@ const getZotero = () => {
 }
 
 const configureZoteroShim = (schema, intl) => {
-	const collator = new Intl.Collator([intl.locale], {
-		numeric: true,
-		sensitivity: 'base'
-	});
+	const collatorOptions = { numeric: true, sensitivity: 'base' };
+	let locale = normalizeLocale(intl.locale);
+	let collator;
+	try {
+		collator = new Intl.Collator([locale], collatorOptions);
+	} catch {
+		locale = 'en-US';
+		collator = new Intl.Collator([locale], collatorOptions);
+	}
 
 	Zotero = {
 		debug: console.log,
@@ -35,7 +42,7 @@ const configureZoteroShim = (schema, intl) => {
 
 	window.Zotero = Zotero;
 
-	Zotero.locale = intl.locale;
+	Zotero.locale = locale;
 	Zotero.getString = identifier => {
 		switch (identifier) {
 			case 'date.yesterday':

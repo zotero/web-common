@@ -27,6 +27,17 @@ export default defineConfig({
 
 		/* Port to use for Playwright component endpoint. */
 		ctPort: 3100,
+
+		// ignore the Node-only require('jsdom') in zotero-utilities
+		ctViteConfig: {
+			build: {
+				commonjsOptions: {
+					include: [/node_modules/, /modules[\\/]zotero-utilities/],
+					transformMixedEsModules: true,
+					ignore: ['jsdom'],
+				},
+			},
+		},
 	},
 
 	/* Configure projects for major browsers */
