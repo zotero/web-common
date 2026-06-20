@@ -29,3 +29,6 @@ export const getScrollbarWidth = () => {
 
 	return scrollbarWidth;
 }
+
+// Selector matching the elements that can receive keyboard focus.
+export const focusableSelector = 'button:not([disabled]),[href]:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"]):not([disabled])';

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { SwitcherSection } from './sections/switcher-section';
 import { ButtonSection } from './sections/button-section';
 import { DropdownSection } from './sections/dropdown-section';
+import { PopoverSection } from './sections/popover-section';
 import { SelectSection } from './sections/select-section';
 import { TabsSection } from './sections/tabs-section';
 import { MenuEntrySection } from './sections/menu-entry-section';
@@ -21,6 +22,7 @@ function App() {
 			<SwitcherSection />
 			<ButtonSection />
 			<DropdownSection />
+			<PopoverSection />
 			<SelectSection />
 			<TabsSection />
 			<MenuEntrySection />

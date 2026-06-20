@@ -74,6 +74,7 @@ $grid-breakpoints: (
 
 $z-index-menu: 50 !default;
 $z-index-hairline: 20 !default;
+$z-index-popover: 60 !default;
 
 $font-size-base: 16px !default;
 $line-height-base: 1.5 !default;
@@ -100,6 +101,25 @@ $menu-no-results-color: $shade-5 !default;
 
 $dropdown-item-padding-x-touch: $space-md !default;
 $dropdown-item-padding-y-touch: 9px !default;
+
+$popover-max-width: 400px !default;
+$popover-border-radius: $border-radius-sm !default;
+$popover-border-width: $border-width !default;
+$popover-header-padding-y: $space-xs !default;
+$popover-header-padding-x: $space-sm !default;
+$popover-header-font-size: 14px !default;
+$popover-body-padding-y: $space-xs !default;
+$popover-body-padding-x: $space-sm !default;
+$popover-arrow-width: $space-md !default;
+$popover-arrow-height: $space-xs !default;
+$popover-bg: $body-bg !default;
+$popover-body-color: $text-color !default;
+$popover-header-bg: $body-bg !default;
+$popover-header-color: $shade-8 !default;
+$popover-header-border-color: $shade-2 !default;
+$popover-box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 3px 8px rgba(0, 0, 0, 0.2) !default;
+$popover-arrow-color: $body-bg !default;
+$popover-arrow-outer-color: rgba(0, 0, 0, 0.2) !default;
 
 $input-btn-focus-width: 2px !default;
 $input-btn-border-radius: $border-radius-sm !default;
