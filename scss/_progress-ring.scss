@@ -1,0 +1,24 @@
+@use "abstracts/defaults";
+
+.progress-ring {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.progress-ring-track {
+	fill: none;
+	stroke: defaults.$progress-ring-track-color;
+}
+
+.progress-ring-fill {
+	fill: none;
+	stroke: defaults.$progress-ring-color;
+	stroke-linecap: round;
+	transition: stroke-dashoffset defaults.$progress-ring-transition;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.progress-ring-fill {
+		transition: none;
+	}
+}

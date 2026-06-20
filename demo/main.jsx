@@ -6,6 +6,7 @@ import { DropdownSection } from './sections/dropdown-section';
 import { SelectSection } from './sections/select-section';
 import { TabsSection } from './sections/tabs-section';
 import { MenuEntrySection } from './sections/menu-entry-section';
+import { ProgressRingSection } from './sections/progress-ring-section';
 import './main.scss';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
 			<SelectSection />
 			<TabsSection />
 			<MenuEntrySection />
+			<ProgressRingSection />
 		</div>
 	);
 }

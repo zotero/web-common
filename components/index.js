@@ -3,6 +3,7 @@ export * from './dropdown';
 export * from './icon';
 export * from './menu-entry';
 export * from './menu-entry-mobile';
+export * from './progress-ring';
 export * from './select';
 export * from './spinner';
 export * from './static';
