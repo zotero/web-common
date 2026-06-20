@@ -188,3 +188,154 @@ test('trapFocus keeps Tab within the dialog', async ({ mount }) => {
 	await page.keyboard.press('Tab');
 	await expect(first).toBeFocused();
 });
+
+test('A disabled popover renders a disabled trigger and does not open', async ({ mount }) => {
+	const component = await mount(
+		<div className="container">
+			<UncontrolledPopover disabled>
+				<PopoverTrigger>Open</PopoverTrigger>
+				<PopoverDialog aria-label="Example">
+					<PopoverBody>Body content</PopoverBody>
+				</PopoverDialog>
+			</UncontrolledPopover>
+		</div>
+	);
+
+	const trigger = component.getByRole('button', { name: 'Open' });
+	const dialog = component.locator('.popover');
+
+	// The trigger reflects the disabled state (native disabled + class), so it is non-interactive
+	// rather than a fully-enabled control whose clicks are silently swallowed.
+	await expect(trigger).toBeDisabled();
+	await expect(trigger).toHaveClass(/disabled/);
+	await expect(dialog).toBeHidden();
+});
+
+test('With flip enabled and no room below, the popover renders above the trigger', async ({ mount }) => {
+	const component = await mount(
+		<div style={{ position: 'fixed', left: '8px', bottom: '8px' }}>
+			<UncontrolledPopover placement="bottom-start" flip>
+				<PopoverTrigger>Open</PopoverTrigger>
+				<PopoverDialog aria-label="Example">
+					<PopoverBody>Body content</PopoverBody>
+				</PopoverDialog>
+			</UncontrolledPopover>
+		</div>
+	);
+
+	const trigger = component.getByRole('button', { name: 'Open' });
+	const dialog = component.locator('.popover');
+
+	await trigger.click();
+	await expect(dialog).toBeVisible();
+
+	// The side class follows the resolved placement, so a flipped popover is styled as `popover-top`
+	// rather than the requested `popover-bottom`.
+	await expect(dialog).toHaveClass(/popover-top/);
+	await expect(dialog).not.toHaveClass(/popover-bottom/);
+});
+
+test('A controlled popover autofocuses its content when opened via props', async ({ mount }) => {
+	const component = await mount(
+		<div className="container">
+			<Popover isOpen={false}>
+				<PopoverTrigger>Open</PopoverTrigger>
+				<PopoverDialog aria-label="Example">
+					<PopoverBody>
+						<input type="text" aria-label="field" />
+					</PopoverBody>
+				</PopoverDialog>
+			</Popover>
+		</div>
+	);
+
+	const dialog = component.locator('.popover');
+	const input = component.getByRole('textbox', { name: 'field' });
+
+	await expect(dialog).toBeHidden();
+
+	// Opened purely through a props update -- no trigger interaction -- focus still moves to the content.
+	await component.update(
+		<div className="container">
+			<Popover isOpen={true}>
+				<PopoverTrigger>Open</PopoverTrigger>
+				<PopoverDialog aria-label="Example">
+					<PopoverBody>
+						<input type="text" aria-label="field" />
+					</PopoverBody>
+				</PopoverDialog>
+			</Popover>
+		</div>
+	);
+
+	await expect(dialog).toBeVisible();
+	await expect(input).toBeFocused();
+});
+
+test('Closing by clicking a non-focusable area outside returns focus to the trigger', async ({ mount }) => {
+	const component = await mount(
+		<div className="container">
+			<div style={{ width: '120px', height: '60px' }}>outside area</div>
+			<UncontrolledPopover>
+				<PopoverTrigger>Open</PopoverTrigger>
+				<PopoverDialog aria-label="Example">
+					<PopoverBody>
+						<input type="text" aria-label="field" />
+					</PopoverBody>
+				</PopoverDialog>
+			</UncontrolledPopover>
+		</div>
+	);
+
+	const trigger = component.getByRole('button', { name: 'Open' });
+	const dialog = component.locator('.popover');
+	const input = component.getByRole('textbox', { name: 'field' });
+	const outside = component.getByText('outside area');
+
+	await trigger.click();
+	await expect(dialog).toBeVisible();
+	await expect(input).toBeFocused();
+
+	// Focus was inside the dialog, so dismissing via an outside click restores it to the trigger.
+	await outside.click();
+	await expect(dialog).toBeHidden();
+	await expect(trigger).toBeFocused();
+});
+
+test('Reopening after a full cycle autofocuses and restores focus each time', async ({ mount }) => {
+	const component = await mount(
+		<div className="container">
+			<UncontrolledPopover>
+				<PopoverTrigger>Open</PopoverTrigger>
+				<PopoverDialog aria-label="Example">
+					<PopoverBody>
+						<input type="text" aria-label="field" />
+					</PopoverBody>
+				</PopoverDialog>
+			</UncontrolledPopover>
+		</div>
+	);
+
+	const trigger = component.getByRole('button', { name: 'Open' });
+	const dialog = component.locator('.popover');
+	const input = component.getByRole('textbox', { name: 'field' });
+	const page = component.page();
+
+	// First cycle: keyboard open focuses content, Escape restores focus to the trigger.
+	await trigger.focus();
+	await page.keyboard.press('Enter');
+	await expect(dialog).toBeVisible();
+	await expect(input).toBeFocused();
+	await page.keyboard.press('Escape');
+	await expect(dialog).toBeHidden();
+	await expect(trigger).toBeFocused();
+
+	// Second cycle: the focus latch must re-arm on the new open edge and the close edge must restore
+	// focus again -- i.e. nothing was left stuck after the first cycle.
+	await page.keyboard.press('Enter');
+	await expect(dialog).toBeVisible();
+	await expect(input).toBeFocused();
+	await page.keyboard.press('Escape');
+	await expect(dialog).toBeHidden();
+	await expect(trigger).toBeFocused();
+});

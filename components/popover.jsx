@@ -1,16 +1,16 @@
 import {
-	createContext, forwardRef, memo, useCallback, useContext, useEffect, useId, useLayoutEffect, useRef, useState,
+	createContext, forwardRef, memo, useCallback, useContext, useEffect, useId, useLayoutEffect, useMemo, useRef, useState,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { arrow as arrowMiddleware, flip as flipMiddleware, shift as shiftMiddleware, useFloating } from '@floating-ui/react-dom';
 import cx from 'classnames';
 
-import { usePrevious } from '../hooks';
 import { Button } from './button';
 import { FocusTrap } from './focus-trap';
 import { pick } from '../utils/immutable';
 import { isTriggerEvent } from '../utils/event';
 import { focusableSelector } from '../utils/dom';
+import { mergeRefs } from '../utils/react';
 
 export const PopoverContext = createContext({});
 
@@ -25,24 +25,26 @@ export const Popover = memo(props => {
 	const triggerRef = useRef(null);
 	const arrowRef = useRef(null);
 	const pendingFocus = useRef(false);
-	const pendingReturnFocus = useRef(false);
-	const wasOpen = usePrevious(isOpen);
+	const prevIsOpen = useRef(isOpen);
 	const [isReady, setIsReady] = useState(false);
 	// toggleCount lets the positioning effect re-run even when isOpen does not change
 	const [toggleCount, setToggleCount] = useState(0);
 
-	const middleware = [];
-	if (flip) {
-		middleware.push(flipMiddleware({ fallbackAxisSideDirection: 'end' }));
-	}
-	if (shift) {
-		middleware.push(shiftMiddleware(typeof shift === 'object' ? shift : undefined));
-	}
-	if (arrow) {
-		middleware.push(arrowMiddleware({ element: arrowRef }));
-	}
+	const middleware = useMemo(() => {
+		const m = [];
+		if (flip) {
+			m.push(flipMiddleware({ fallbackAxisSideDirection: 'end' }));
+		}
+		if (shift) {
+			m.push(shiftMiddleware(typeof shift === 'object' ? shift : undefined));
+		}
+		if (arrow) {
+			m.push(arrowMiddleware({ element: arrowRef }));
+		}
+		return m;
+	}, [flip, shift, arrow]);
 
-	const { x, y, refs, strategy, update, middlewareData } = useFloating({ placement, strategy: strategyProp, middleware });
+	const { placement: resolvedPlacement, x, y, refs, strategy, update, middlewareData } = useFloating({ placement, strategy: strategyProp, middleware });
 
 	const handleToggle = useCallback(ev => {
 		if (disabled) {
@@ -52,13 +54,6 @@ export const Popover = memo(props => {
 		if (isTriggerEvent(ev) || (ev.type === 'keydown' && ['ArrowDown', 'Escape', 'Enter', 'Tab', ' '].includes(ev.key))) {
 			if (!isOpen && (ev.key === 'Tab' || ev.key === 'Escape')) {
 				return;
-			}
-
-			if (!isOpen) {
-				pendingFocus.current = true;
-				setIsReady(false);
-			} else {
-				pendingReturnFocus.current = true;
 			}
 
 			setToggleCount(c => c + 1);
@@ -87,15 +82,31 @@ export const Popover = memo(props => {
 	}, [onToggle, refs]);
 
 	useEffect(() => {
-		if (isOpen !== wasOpen && typeof wasOpen !== 'undefined') {
-			update();
-			setIsReady(true);
-		} else if (isOpen) {
-			// toggle was requested, but isOpen did not change -- restore isReady
+		if (isOpen) {
 			update();
 			setIsReady(true);
 		}
-	}, [isOpen, update, wasOpen, toggleCount]);
+	}, [isOpen, update, toggleCount]);
+
+	useLayoutEffect(() => {
+		const wasOpen = prevIsOpen.current;
+		if (isOpen === wasOpen) {
+			return;
+		}
+		prevIsOpen.current = isOpen;
+
+		if (isOpen) {
+			pendingFocus.current = true;
+		} else {
+			pendingFocus.current = false;
+			setIsReady(false);
+			const trigger = triggerRef.current;
+			const active = document.activeElement;
+			if (trigger && (!active || active === document.body || refs.floating.current?.contains(active))) {
+				trigger.focus({ preventScroll: true });
+			}
+		}
+	}, [isOpen, refs]);
 
 	useLayoutEffect(() => {
 		if (isOpen && isReady && pendingFocus.current) {
@@ -107,19 +118,7 @@ export const Popover = memo(props => {
 				}
 			}
 		}
-		if (wasOpen && !isOpen && pendingReturnFocus.current) {
-			pendingReturnFocus.current = false;
-			const trigger = triggerRef.current;
-			if (trigger) {
-				// Only return focus to the trigger if focus is still within the popover, i.e. it has not
-				// deliberately moved elsewhere (e.g. into a modal opened from the popover content).
-				const active = document.activeElement;
-				if (!active || active === document.body || refs.floating.current?.contains(active)) {
-					trigger.focus({ preventScroll: true });
-				}
-			}
-		}
-	}, [isOpen, isReady, refs, wasOpen, autoFocus]);
+	}, [isOpen, isReady, refs, autoFocus]);
 
 	useEffect(() => {
 		if (isOpen && dismissOnOutsideClick) {
@@ -139,7 +138,7 @@ export const Popover = memo(props => {
 	return (
 		<PopoverContext.Provider
 			value={{
-				isOpen, disabled, handleToggle, dialogId, placement, x, y, strategy,
+				isOpen, disabled, handleToggle, dialogId, placement: resolvedPlacement, x, y, strategy,
 				refs, triggerRef, arrowRef, middlewareData, update, isReady, arrow, trapFocus, dismissOnEscape, portal,
 			}}
 		>
@@ -153,7 +152,8 @@ Popover.displayName = 'Popover';
 export const PopoverTrigger = memo(forwardRef((props, ref) => {
 	const { tag, className, tabIndex, title, onKeyDown, onClick, children, ...rest } = props;
 	const Tag = tag || Button;
-	const { isOpen, dialogId, refs, triggerRef, handleToggle } = useContext(PopoverContext);
+	const { isOpen, disabled, dialogId, refs, triggerRef, handleToggle } = useContext(PopoverContext);
+	const isNativeButton = Tag === Button || Tag === 'button';
 
 	const handleClick = useCallback(ev => {
 		onClick?.(ev);
@@ -176,16 +176,12 @@ export const PopoverTrigger = memo(forwardRef((props, ref) => {
 			aria-controls={dialogId}
 			aria-expanded={isOpen}
 			aria-haspopup="dialog"
-			className={cx('popover-trigger', className)}
+			aria-disabled={!isNativeButton && disabled ? true : undefined}
+			disabled={isNativeButton ? disabled : undefined}
+			className={cx('popover-trigger', className, { disabled })}
 			onClick={handleClick}
 			onKeyDown={handleKeyDown}
-			ref={r => {
-				refs.setReference?.(r);
-				if (triggerRef) {
-					triggerRef.current = r;
-				}
-				ref instanceof Function ? ref(r) : ref ? ref.current = r : null;
-			}}
+			ref={mergeRefs(refs.setReference, triggerRef, ref)}
 			tabIndex={tabIndex}
 		>
 			{children}
@@ -231,7 +227,7 @@ export const PopoverDialog = memo(props => {
 			onKeyDown={handleKeyDown}
 			{...pick(rest, p => p.startsWith('data-') || p.startsWith('aria-'))}
 		>
-			<div className="popover-inner" role="tooltip">
+			<div className="popover-inner">
 				{children}
 			</div>
 			{arrow && (

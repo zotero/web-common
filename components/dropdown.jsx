@@ -8,6 +8,7 @@ import cx from 'classnames';
 import {useFocusManager, usePrevious} from '../hooks';
 import {Button} from './button';
 import {pick} from '../utils/immutable';
+import {mergeRefs} from '../utils/react';
 import {isTriggerEvent} from '../utils/event';
 
 export const DropdownContext = createContext({});
@@ -195,10 +196,7 @@ export const DropdownToggle = memo(forwardRef((props, ref) => {
 			className={cx('dropdown-toggle', className)}
 			onClick={handleClick}
 			onKeyDown={handleKeyDown}
-			ref={r => {
-				refs.setReference?.(r);
-				ref instanceof Function ? ref(r) : ref ? ref.current = r : null
-			}}
+			ref={mergeRefs(refs.setReference, ref)}
 			tabIndex={tabIndex}
 		>
 			{props.children}
