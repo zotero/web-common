@@ -302,6 +302,34 @@ test('Closing by clicking a non-focusable area outside returns focus to the trig
 	await expect(trigger).toBeFocused();
 });
 
+test('A centered popover aligns its arrow with the trigger centre', async ({ mount }) => {
+	const component = await mount(
+		<div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+			<Popover isOpen placement="bottom" autoFocus={false}>
+				<PopoverTrigger>Open</PopoverTrigger>
+				<PopoverDialog aria-label="Example">
+					<PopoverBody>Centered popover content</PopoverBody>
+				</PopoverDialog>
+			</Popover>
+		</div>
+	);
+
+	const dialog = component.locator('.popover');
+	const arrow = component.locator('.popover-arrow');
+	const trigger = component.getByRole('button', { name: 'Open' });
+
+	await expect(dialog).toBeVisible();
+	await expect(dialog).toHaveClass(/popover-bottom/);
+
+	// Regression test for the arrow being shifted by mismatched CSS margin and floating-ui arrow padding
+	const arrowBox = await arrow.boundingBox();
+	const triggerBox = await trigger.boundingBox();
+	const arrowCentre = arrowBox.x + arrowBox.width / 2;
+	const triggerCentre = triggerBox.x + triggerBox.width / 2;
+
+	expect(Math.abs(arrowCentre - triggerCentre)).toBeLessThan(1);
+});
+
 test('Reopening after a full cycle autofocuses and restores focus each time', async ({ mount }) => {
 	const component = await mount(
 		<div className="container">

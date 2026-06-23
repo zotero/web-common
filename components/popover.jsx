@@ -12,12 +12,17 @@ import { isTriggerEvent } from '../utils/event';
 import { focusableSelector } from '../utils/dom';
 import { mergeRefs } from '../utils/react';
 
+// Keep the arrow this many px clear of the popover's rounded corners (generally
+// the border radius multiplied by two). If `$popover-border-radius` is modified
+// in CSS, `arrowPadding` should also be provided by the consumer.
+const ARROW_PADDING = 6;
+
 export const PopoverContext = createContext({});
 
 export const Popover = memo(props => {
 	const {
 		isOpen, onToggle, disabled = false, placement = 'bottom-start', strategy: strategyProp,
-		arrow = true, shift = false, flip = false, trapFocus = false, autoFocus = true,
+		arrow = true, arrowPadding = ARROW_PADDING, shift = false, flip = false, trapFocus = false, autoFocus = true,
 		dismissOnOutsideClick = true, dismissOnEscape = true, portal, children,
 	} = props;
 
@@ -39,10 +44,10 @@ export const Popover = memo(props => {
 			m.push(shiftMiddleware(typeof shift === 'object' ? shift : undefined));
 		}
 		if (arrow) {
-			m.push(arrowMiddleware({ element: arrowRef }));
+			m.push(arrowMiddleware({ element: arrowRef, padding: arrowPadding }));
 		}
 		return m;
-	}, [flip, shift, arrow]);
+	}, [flip, shift, arrow, arrowPadding]);
 
 	const { placement: resolvedPlacement, x, y, refs, strategy, update, middlewareData } = useFloating({ placement, strategy: strategyProp, middleware });
 
