@@ -2,7 +2,7 @@ import {
 	createContext, forwardRef, memo, useCallback, useContext, useEffect, useId, useLayoutEffect, useMemo, useRef, useState,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { arrow as arrowMiddleware, flip as flipMiddleware, shift as shiftMiddleware, useFloating } from '@floating-ui/react-dom';
+import { arrow as arrowMiddleware, flip as flipMiddleware, offset as offsetMiddleware, shift as shiftMiddleware, useFloating } from '@floating-ui/react-dom';
 import cx from 'classnames';
 
 import { Button } from './button';
@@ -22,7 +22,7 @@ export const PopoverContext = createContext({});
 export const Popover = memo(props => {
 	const {
 		isOpen, onToggle, disabled = false, placement = 'bottom-start', strategy: strategyProp,
-		arrow = true, arrowPadding = ARROW_PADDING, shift = false, flip = false, trapFocus = false, autoFocus = true,
+		arrow = true, arrowPadding = ARROW_PADDING, offset = null, shift = false, flip = false, trapFocus = false, autoFocus = true,
 		dismissOnOutsideClick = true, dismissOnEscape = true, portal, children,
 	} = props;
 
@@ -37,6 +37,11 @@ export const Popover = memo(props => {
 
 	const middleware = useMemo(() => {
 		const m = [];
+		// `offset` must come before `flip`/`shift` so that those middleware
+		// account for the displacement.
+		if (offset !== null) {
+			m.push(offsetMiddleware(offset));
+		}
 		if (flip) {
 			m.push(flipMiddleware({ fallbackAxisSideDirection: 'end' }));
 		}
@@ -47,7 +52,7 @@ export const Popover = memo(props => {
 			m.push(arrowMiddleware({ element: arrowRef, padding: arrowPadding }));
 		}
 		return m;
-	}, [flip, shift, arrow, arrowPadding]);
+	}, [offset, flip, shift, arrow, arrowPadding]);
 
 	const { placement: resolvedPlacement, x, y, refs, strategy, update, middlewareData } = useFloating({ placement, strategy: strategyProp, middleware });
 
