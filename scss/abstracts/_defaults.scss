@@ -116,9 +116,10 @@ $popover-body-color: $text-color !default;
 $popover-header-bg: $body-bg !default;
 $popover-header-color: $shade-8 !default;
 $popover-header-border-color: $shade-2 !default;
-$popover-box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 3px 8px rgba(0, 0, 0, 0.2) !default;
+$popover-border-color: rgba(0, 0, 0, 0.08) !default;
+$popover-box-shadow: 0 0 0 1px $popover-border-color, 0 3px 8px rgba(0, 0, 0, 0.2) !default;
 $popover-arrow-color: $body-bg !default;
-$popover-arrow-outer-color: rgba(0, 0, 0, 0.2) !default;
+$popover-arrow-outer-color: $popover-border-color !default;
 
 $input-btn-focus-width: 2px !default;
 $input-btn-border-radius: $border-radius-sm !default;
