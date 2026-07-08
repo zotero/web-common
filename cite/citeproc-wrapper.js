@@ -104,10 +104,25 @@ const pickBestLocale = (userLocales, supportedLocales, fallback = 'en-US') => {
 
 // Deal with CiteprocJS bibliography errors, see zotero/zoterobib#309
 const handleBibliographyErrors = (meta, items, itemsStore, skipErrors = false) => {
+	// citeproc-js records a `bibliography_errors` entry whenever an item renders
+	// no meaningful content, but the shape of `items` then depends on the style.
+	// Author-date and note styles drop the entry, so `items` ends up shorter than
+	// `entry_ids` and the missing placeholder has to be spliced back in. Numeric
+	// styles instead keep a placeholder for it -- the citation number on its own,
+	// or a "no printed form" message -- so `items` still lines up with `entry_ids`
+	// and that placeholder only needs overwriting in place.
+	//
+	// Comparing the two lengths tells the cases apart
+	const entriesMissing = meta.entry_ids.length > items.length;
 	meta.bibliography_errors.forEach(({ index, itemID, error_code }) => {
 		console.warn(`CiteprocJS bibliography error: ${error_code} for item ${itemID} at index ${index}`, { meta, items, itemsStore });
 		const failedItemData = itemsStore[itemID] ?? {};
-		items.splice(index, 0, skipErrors ? '' : `<span class="csl-error">${failedItemData.title ?? '<i>Untitled</i>'}</span>`);
+		const replacement = skipErrors ? '' : `<span class="csl-error">${failedItemData.title ?? '<i>Untitled</i>'}</span>`;
+		if (entriesMissing) {
+			items.splice(index, 0, replacement);
+		} else {
+			items[index] = replacement;
+		}
 	});
 	if (meta.entry_ids.length !== items.length) {
 		throw new Error("CiteprocJS bibliography meta entry_ids length does not match items length");
