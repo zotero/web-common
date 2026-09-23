@@ -4,6 +4,7 @@ export interface TabProps {
 	activateOnFocus?: boolean;
 	asSections?: boolean;
 	children?: React.ReactNode;
+	id?: string;
 	isActive?: boolean;
 	isDisabled?: boolean;
 	onActivate: (el: HTMLElement) => void;

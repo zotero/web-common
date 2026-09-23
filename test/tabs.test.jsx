@@ -23,6 +23,52 @@ test('Renders tabs with correct ARIA roles', async ({ mount }) => {
 	await expect(component.getByRole('tabpanel')).toHaveText('Content 1');
 });
 
+test('The tablist is not wrapped in a navigation landmark', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Tabs aria-label="Sections">
+				<Tab onActivate={() => {}} isActive>Tab 1</Tab>
+				<Tab onActivate={() => {}}>Tab 2</Tab>
+			</Tabs>
+		</div>
+	);
+
+	await expect(component.getByRole('tablist', { name: 'Sections' })).toBeVisible();
+	await expect(component.getByRole('navigation')).toHaveCount(0);
+	await expect(component.locator('nav')).toHaveCount(0);
+});
+
+test('Tabs applies custom className alongside built-in classes', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Tabs className="custom-tabs" compact>
+				<Tab onActivate={() => {}} isActive>Tab 1</Tab>
+			</Tabs>
+		</div>
+	);
+
+	const tablist = component.getByRole('tablist');
+	await expect(tablist).toHaveClass(/\bcustom-tabs\b/);
+	await expect(tablist).toHaveClass(/\btabs\b/);
+	await expect(tablist).toHaveClass(/\bcompact\b/);
+});
+
+test('Tab panels can be labelled by their tab', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Tabs>
+				<Tab id="tab-1" onActivate={() => {}} aria-controls="panel-1" isActive>Tab 1</Tab>
+				<Tab id="tab-2" onActivate={() => {}} aria-controls="panel-2">Tab 2</Tab>
+			</Tabs>
+			<TabPane id="panel-1" aria-labelledby="tab-1" isActive>Content 1</TabPane>
+			<TabPane id="panel-2" aria-labelledby="tab-2">Content 2</TabPane>
+		</div>
+	);
+
+	await expect(component.getByRole('tab', { name: 'Tab 1' })).toHaveAttribute('id', 'tab-1');
+	await expect(component.getByRole('tabpanel', { name: 'Tab 1' })).toHaveText('Content 1');
+});
+
 test('Clicking a tab calls onActivate', async ({ mount }) => {
 	let activatedTab = null;
 

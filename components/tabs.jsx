@@ -61,31 +61,29 @@ const Tab = memo(props => {
 Tab.displayName = 'Tab';
 
 
-const Tabs = memo(({ asSections, children, justified, compact, activateOnFocus, ...rest }) => {
+const Tabs = memo(({ asSections, children, className, justified, compact, activateOnFocus, ...rest }) => {
 	const ref = useRef(null);
 	const { focusNext, focusPrev, receiveFocus, receiveBlur, resetLastFocused } =
 		useFocusManager(ref, { initialQuerySelector: '.tab.active' });
 
 	return (
-		<nav>
-			<div
-				className={cx('nav', 'tabs', { justified, compact, 'activate-on-focus': activateOnFocus })}
-				onBlur={asSections ? noop : receiveBlur}
-				onFocus={asSections ? noop : receiveFocus}
-				ref={ref}
-				role={asSections ? null : "tablist"}
-				tabIndex={asSections ? -1 : 0}
-				{...pick(rest, p => p.startsWith('aria-') || p.startsWith('data-'))}
-			>
-				{
-					mapChildren(children, child =>
-						child && child.type === Tab ?
-							cloneElement(child, { activateOnFocus, asSections, focusNext, focusPrev, resetLastFocused }) :
-							child
-					)
-				}
-			</div>
-		</nav>
+		<div
+			className={cx('tabs', className, { justified, compact, 'activate-on-focus': activateOnFocus })}
+			onBlur={asSections ? noop : receiveBlur}
+			onFocus={asSections ? noop : receiveFocus}
+			ref={ref}
+			role={asSections ? null : "tablist"}
+			tabIndex={asSections ? -1 : 0}
+			{...pick(rest, p => p.startsWith('aria-') || p.startsWith('data-'))}
+		>
+			{
+				mapChildren(children, child =>
+					child && child.type === Tab ?
+						cloneElement(child, { activateOnFocus, asSections, focusNext, focusPrev, resetLastFocused }) :
+						child
+				)
+			}
+		</div>
 	);
 });
 
