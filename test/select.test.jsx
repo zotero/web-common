@@ -52,7 +52,7 @@ test('Clicking on an option fires onChange but not onBlur', async ({ mount }) =>
 
 	await component.getByRole('combobox').click();
 	await component.getByRole('option', { name: 'Bar' }).click();
-	expect(changeCount).toBe(1);
+	await expect.poll(() => changeCount).toBe(1);
 	expect(changeValue).toBe('bar');
 	expect(blurCount).toBe(0);
 });
@@ -98,21 +98,21 @@ test('Fires onFocus and onBlur', async ({ mount }) => {
 	const button = component.getByRole('button', { name: 'Focus me' });
 
 	await combobox.click();
-	expect(focusCount).toBe(1);
+	await expect.poll(() => focusCount).toBe(1);
 	await expect(combobox).toBeFocused();
 
 	await page.keyboard.press('Tab');
-	expect(blurCount).toBe(1);
+	await expect.poll(() => blurCount).toBe(1);
 	await expect(button).toBeFocused();
 
 	await page.keyboard.press('Shift+Tab');
 	await expect(combobox).toBeFocused();
-	expect(focusCount).toBe(2);
+	await expect.poll(() => focusCount).toBe(2);
 	expect(blurCount).toBe(1);
 
 	await page.mouse.click(0, 300);
+	await expect.poll(() => blurCount).toBe(2);
 	expect(focusCount).toBe(2);
-	expect(blurCount).toBe(2);
 	await expect(combobox).not.toBeFocused();
 });
 
@@ -267,7 +267,7 @@ test('Should skip over SelectDivider when using keyboard nav', async ({ mount })
 	await page.keyboard.press('ArrowDown');
 	await page.keyboard.press('ArrowDown');
 	await page.keyboard.press('Enter');
-	expect(triggerCount).toBe(1);
+	await expect.poll(() => triggerCount).toBe(1);
 });
 
 test('Should update options when re-rendering with a different options array', async ({ mount }) => {

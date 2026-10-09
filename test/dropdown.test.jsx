@@ -52,7 +52,7 @@ test('Basic dropdown interaction', async ({ mount }) => {
 	// Clicking the toggle should not open the menu (controlled component) but should call onToggle
 	await toggle.click();
 	await expect(menu).toBeHidden();
-	expect(toggleCount).toBe(1);
+	await expect.poll(() => toggleCount).toBe(1);
 
 	// Open the dropdown via props update
 	await component.update(
@@ -73,10 +73,10 @@ test('Basic dropdown interaction', async ({ mount }) => {
 	await expect(component.getByText('Item 2')).toBeVisible();
 
 	// Clicking a DropdownItem should call onClick and onToggle, but a menu stays open (controlled)
-	// Note: DropdownItem dispatches onToggle via setTimeout, so we poll for the async callback
+	// Note: callbacks reach the test asynchronously (and DropdownItem dispatches onToggle via setTimeout), so we poll
 	await component.getByText('Item 1').click();
 	await expect(menu).toBeVisible();
-	expect(itemClickCount).toBe(1);
+	await expect.poll(() => itemClickCount).toBe(1);
 	await expect.poll(() => toggleCount).toBe(2);
 
 	// Clicking Item 2 (no onClick) should still call onToggle

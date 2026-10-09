@@ -56,7 +56,7 @@ test('Controlled popover follows the isOpen prop', async ({ mount }) => {
 	// Clicking the trigger should not open the popover (controlled) but should call onToggle
 	await trigger.click();
 	await expect(dialog).toBeHidden();
-	expect(toggleCount).toBe(1);
+	await expect.poll(() => toggleCount).toBe(1);
 
 	// Opening via a props update
 	await component.update(

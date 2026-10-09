@@ -82,7 +82,7 @@ test('Clicking a tab calls onActivate', async ({ mount }) => {
 	);
 
 	await component.getByRole('tab', { name: 'Tab 2' }).click();
-	expect(activatedTab).toBe(2);
+	await expect.poll(() => activatedTab).toBe(2);
 
 	// Update to reflect new active state
 	await component.update(
@@ -100,7 +100,7 @@ test('Clicking a tab calls onActivate', async ({ mount }) => {
 
 	// Click Tab 1 to switch back
 	await component.getByRole('tab', { name: 'Tab 1' }).click();
-	expect(activatedTab).toBe(1);
+	await expect.poll(() => activatedTab).toBe(1);
 });
 
 test('Disabled tab does not call onActivate', async ({ mount }) => {
@@ -172,14 +172,15 @@ test('activateOnFocus calls onActivate on arrow key navigation', async ({ mount 
 
 	// Click the active tab then navigate with arrows
 	await component.getByRole('tab', { name: 'Tab 1' }).click();
-	// Click calls onActivate, reset counter
+	// Click calls onActivate, wait for it to arrive before resetting counter
+	await expect.poll(() => activateCount).toBe(1);
 	activateCount = 0;
 
 	await page.keyboard.press('ArrowRight');
-	expect(activateCount).toBe(1);
+	await expect.poll(() => activateCount).toBe(1);
 
 	await page.keyboard.press('ArrowRight');
-	expect(activateCount).toBe(2);
+	await expect.poll(() => activateCount).toBe(2);
 });
 
 test('TabPane shows loading spinner', async ({ mount }) => {

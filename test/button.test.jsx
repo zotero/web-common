@@ -38,5 +38,5 @@ test('onClick is called when clicked', async ({ mount }) => {
 
 	const button = component.getByRole('button', { name: 'FooBar' });
 	await button.click();
-	expect(clicked).toBe(true);
+	await expect.poll(() => clicked).toBe(true);
 });
