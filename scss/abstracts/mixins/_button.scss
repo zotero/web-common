@@ -1,6 +1,7 @@
 /* stylelint-disable no-descending-specificity */
 @use "sass:color";
 @use "../defaults";
+@use "focus";
 
 @mixin button-variant($color, $outline: null, $inverse: null) {
 	$btn-color: if($inverse, defaults.$shade-0, $color);
@@ -58,20 +59,18 @@
 		}
 	}
 
-	&:focus {
-		.keyboard & {
-			box-shadow: 0 0 0 defaults.$input-btn-focus-width $btn-color;
+	@include focus.keyboard-focus {
+		box-shadow: 0 0 0 defaults.$input-btn-focus-width $btn-color;
 
-			&:hover {
-				border-color: if($outline, color.adjust($btn-color, $lightness: 4%), transparent);
-				box-shadow:
-					0 0 0 defaults.$input-btn-focus-width color.adjust($btn-color, $lightness: 4%),
-					0 4px 4px defaults.$btn-box-shadow-color;
-			}
+		&:hover {
+			border-color: if($outline, color.adjust($btn-color, $lightness: 4%), transparent);
+			box-shadow:
+				0 0 0 defaults.$input-btn-focus-width color.adjust($btn-color, $lightness: 4%),
+				0 4px 4px defaults.$btn-box-shadow-color;
+		}
 
-			&:active {
-				box-shadow: 0 0 0 defaults.$input-btn-focus-width color.adjust($btn-color, $lightness: -8%);
-			}
+		&:active {
+			box-shadow: 0 0 0 defaults.$input-btn-focus-width color.adjust($btn-color, $lightness: -8%);
 		}
 	}
 
@@ -89,20 +88,18 @@
 			background-color: color.adjust(defaults.$btn-success-color, $lightness: -8%);
 		}
 
-		&:focus {
-			.keyboard & {
-				box-shadow: 0 0 0 defaults.$input-btn-focus-width defaults.$btn-success-color;
+		@include focus.keyboard-focus {
+			box-shadow: 0 0 0 defaults.$input-btn-focus-width defaults.$btn-success-color;
 
-				&:hover {
-					border-color: if($outline, color.adjust($btn-color, $lightness: 4%), transparent);
-					box-shadow:
-						0 0 0 defaults.$input-btn-focus-width color.adjust(defaults.$btn-success-color, $lightness: 4%),
-						0 4px 4px defaults.$btn-box-shadow-color;
-				}
+			&:hover {
+				border-color: if($outline, color.adjust($btn-color, $lightness: 4%), transparent);
+				box-shadow:
+					0 0 0 defaults.$input-btn-focus-width color.adjust(defaults.$btn-success-color, $lightness: 4%),
+					0 4px 4px defaults.$btn-box-shadow-color;
+			}
 
-				&:active {
-					box-shadow: 0 0 0 defaults.$input-btn-focus-width color.adjust(defaults.$btn-success-color, $lightness: -8%);
-				}
+			&:active {
+				box-shadow: 0 0 0 defaults.$input-btn-focus-width color.adjust(defaults.$btn-success-color, $lightness: -8%);
 			}
 		}
 	}

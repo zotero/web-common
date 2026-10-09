@@ -1,5 +1,6 @@
 @use "abstracts/defaults";
 @use "abstracts/mixins/breakpoints";
+@use "abstracts/mixins/focus";
 @use "abstracts/mixins/selectors";
 @use "abstracts/mixins/utilities";
 
@@ -56,15 +57,6 @@
 			padding: (defaults.$input-btn-padding-y + defaults.$input-border-width) defaults.$input-btn-padding-x;
 		}
 
-		&.disabled {
-			color: defaults.$menu-color-disabled;
-
-			&:hover,
-			&:focus {
-				background-color: transparent;
-			}
-		}
-
 		&:focus {
 			outline: none;
 		}
@@ -74,9 +66,17 @@
 			background-color: defaults.$menu-item-hover-bg;
 		}
 
-		@include selectors.state(".keyboard .dropdown") {
+		@include focus.keyboard-focus {
+			background-color: defaults.$menu-item-hover-bg;
+		}
+
+		// Must come after the rule above: its `.keyboard` variant has the same specificity
+		&.disabled {
+			color: defaults.$menu-color-disabled;
+
+			&:hover,
 			&:focus {
-				background-color: defaults.$menu-item-hover-bg;
+				background-color: transparent;
 			}
 		}
 
@@ -84,8 +84,11 @@
 			background-color: defaults.$menu-item-selected-bg;
 
 			&:hover,
-			&:focus,
 			&.active {
+				background-color: defaults.$menu-item-selected-hover-bg;
+			}
+
+			@include focus.keyboard-focus {
 				background-color: defaults.$menu-item-selected-hover-bg;
 			}
 		}

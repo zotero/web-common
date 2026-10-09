@@ -1,5 +1,6 @@
 @use "abstracts/defaults";
 @use "abstracts/mixins/breakpoints";
+@use "abstracts/mixins/focus";
 @use "abstracts/mixins/hairline";
 @use "abstracts/mixins/selectors";
 @use "abstracts/mixins/utilities";
@@ -40,18 +41,17 @@
 			text-decoration: none;
 		}
 
-		&:focus {
-			@include selectors.state(".keyboard .tab") {
-				outline: defaults.$outline-width solid defaults.$outline-color;
-				outline-offset: -(defaults.$outline-width);
-			}
+		@include focus.keyboard-focus {
+			outline: defaults.$outline-width solid defaults.$outline-color;
+			outline-offset: -(defaults.$outline-width);
 		}
 
 		&.active {
 			color: defaults.$tab-active-color;
 			box-shadow: inset 0 -1px defaults.$tab-active-color, 0 1px defaults.$tab-active-color;
 
-			&:focus-within {
+			// The outline replaces the underline, so only hide it when the outline is shown
+			@include focus.keyboard-focus {
 				box-shadow: none;
 			}
 		}

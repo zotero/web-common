@@ -193,3 +193,47 @@ test('TabPane shows loading spinner', async ({ mount }) => {
 	await expect(component.getByRole('progressbar')).toBeVisible();
 	await expect(component.getByText('Content')).toHaveCount(0);
 });
+
+const renderFocusTabs = () => (
+	<div>
+		<button>Before</button>
+		<Tabs>
+			<Tab onActivate={() => {}} isActive>Tab 1</Tab>
+			<Tab onActivate={() => {}}>Tab 2</Tab>
+		</Tabs>
+	</div>
+);
+
+test('Shows a focus ring on a tab focused with the keyboard', async ({ mount }) => {
+	const component = await mount(renderFocusTabs());
+	const tab1 = component.getByRole('tab', { name: 'Tab 1' });
+
+	await component.getByRole('button', { name: 'Before' }).focus();
+	await component.page().keyboard.press('Tab');
+	await expect(tab1).toBeFocused();
+	await expect(tab1).toHaveCSS('outline-style', 'solid');
+	await expect(tab1).toHaveCSS('outline-width', '3px');
+	// the outline replaces the underline of the active tab
+	await expect(tab1).toHaveCSS('box-shadow', 'none');
+});
+
+test('Does not show a focus ring on a tab clicked with the mouse', async ({ mount }) => {
+	const component = await mount(renderFocusTabs());
+	const tab1 = component.getByRole('tab', { name: 'Tab 1' });
+
+	await tab1.click();
+	await expect(tab1).toBeFocused();
+	await expect(tab1).toHaveCSS('outline-style', 'none');
+	await expect(tab1).not.toHaveCSS('box-shadow', 'none');
+});
+
+test('Shows a focus ring on a clicked tab with the legacy keyboard class', async ({ mount }) => {
+	const component = await mount(renderFocusTabs());
+	const tab1 = component.getByRole('tab', { name: 'Tab 1' });
+
+	await component.page().evaluate(() => document.documentElement.classList.add('keyboard'));
+	await tab1.click();
+	await expect(tab1).toBeFocused();
+	await expect(tab1).toHaveCSS('outline-style', 'solid');
+	await expect(tab1).toHaveCSS('box-shadow', 'none');
+});

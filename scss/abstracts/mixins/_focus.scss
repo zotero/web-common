@@ -1,0 +1,14 @@
+// Applies focus styles both for the legacy `.keyboard` class and :focus-visible.
+// Kept as separate rules: browsers without :focus-visible drop a whole selector
+// list that contains it
+@mixin keyboard-focus {
+	&:focus {
+		.keyboard & {
+			@content;
+		}
+	}
+
+	&:focus-visible {
+		@content;
+	}
+}
