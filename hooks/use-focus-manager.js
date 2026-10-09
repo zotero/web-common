@@ -187,6 +187,12 @@ const useFocusManager = (ref, { initialQuerySelector = null, isCarousel = true, 
 			return;
 		}
 
+		if(ev.target !== ev.currentTarget && getTabbables().includes(ev.target)) {
+			// focus landed directly on a candidate (e.g. it was clicked), keep it there
+			storeLastFocused(ev.target);
+			return true;
+		}
+
 		if(lastFocused.current === null && initialQuerySelector !== null) {
 			if(typeof(initialQuerySelector) === 'object' && initialQuerySelector.current && 'focus' in initialQuerySelector.current) {
 				// passed as a ref
@@ -222,9 +228,6 @@ const useFocusManager = (ref, { initialQuerySelector = null, isCarousel = true, 
 		const candidates = getTabbables();
 		if(lastFocused.current !== null && candidates.includes(lastFocused.current)) {
 			lastFocused.current.focus({ preventScroll });
-			return true;
-		} else if(ev.target !== ev.currentTarget && candidates.includes(ev.target)) {
-			// keep the focus on the candidate pressed
 			return true;
 		} else if(ev.target === ev.currentTarget && candidates.length > 0) {
 			candidates[0].focus({ preventScroll });

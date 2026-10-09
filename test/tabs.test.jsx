@@ -228,6 +228,15 @@ test('Does not show a focus ring on a tab clicked with the mouse', async ({ moun
 	await expect(tab1).not.toHaveCSS('box-shadow', 'none');
 });
 
+test('Keeps focus on an inactive tab clicked from outside the tablist', async ({ mount }) => {
+	const component = await mount(renderFocusTabs());
+	const tab2 = component.getByRole('tab', { name: 'Tab 2' });
+
+	await component.getByRole('button', { name: 'Before' }).click();
+	await tab2.click();
+	await expect(tab2).toBeFocused();
+});
+
 test('Shows a focus ring on a clicked tab with the legacy keyboard class', async ({ mount }) => {
 	const component = await mount(renderFocusTabs());
 	const tab1 = component.getByRole('tab', { name: 'Tab 1' });
