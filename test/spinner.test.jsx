@@ -229,3 +229,112 @@ test('Passes through data attributes', async ({ mount }) => {
 
 	await expect(component.getByRole('progressbar')).toHaveAttribute('data-foo', 'bar');
 });
+
+test('Is labelled "Loading" by default', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Spinner />
+		</div>
+	);
+
+	await expect(component.getByRole('progressbar', { name: 'Loading' })).toHaveCount(1);
+});
+
+test('Is labelled by label', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Spinner label="Saving" />
+		</div>
+	);
+
+	await expect(component.getByRole('progressbar', { name: 'Saving' })).toHaveCount(1);
+	await expect(component.getByRole('progressbar')).not.toHaveAttribute('label');
+});
+
+test('Is labelled by aria-label', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Spinner aria-label="Saving" />
+		</div>
+	);
+
+	await expect(component.getByRole('progressbar', { name: 'Saving' })).toHaveCount(1);
+});
+
+test('Is labelled by aria-labelledby without a default label', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<span id="spinner-label">Saving</span>
+			<Spinner aria-labelledby="spinner-label" />
+		</div>
+	);
+
+	const spinner = component.getByRole('progressbar', { name: 'Saving' });
+	await expect(spinner).toHaveAttribute('aria-labelledby', 'spinner-label');
+	await expect(spinner).not.toHaveAttribute('aria-label');
+});
+
+test('Prefers label over aria-label', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Spinner label="Saving" aria-label="Uploading" />
+		</div>
+	);
+
+	await expect(component.getByRole('progressbar')).toHaveAttribute('aria-label', 'Saving');
+});
+
+test('Is hidden when label is empty or null', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Spinner label="" data-testid="empty-label" />
+			<Spinner label={ null } data-testid="null-label" />
+			<Spinner aria-label="" data-testid="empty-aria-label" />
+			<Spinner aria-label={ null } data-testid="null-aria-label" />
+			<Spinner aria-labelledby="" data-testid="empty-aria-labelledby" />
+		</div>
+	);
+
+	for (const testId of ['empty-label', 'null-label', 'empty-aria-label', 'null-aria-label', 'empty-aria-labelledby']) {
+		const spinner = component.getByTestId(testId);
+		await expect(spinner).toHaveAttribute('aria-hidden', 'true');
+		await expect(spinner).not.toHaveAttribute('aria-label');
+	}
+	await expect(component.getByRole('progressbar')).toHaveCount(0);
+});
+
+test('Is labelled by aria-labelledby when label is empty or null', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<span id="spinner-label">Saving</span>
+			<Spinner label={ null } aria-labelledby="spinner-label" />
+		</div>
+	);
+
+	const spinner = component.getByRole('progressbar', { name: 'Saving' });
+	await expect(spinner).not.toHaveAttribute('aria-hidden');
+	await expect(spinner).not.toHaveAttribute('aria-label');
+});
+
+test('Keeps an explicit aria-hidden value when label is empty or null', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Spinner label={ null } aria-hidden="false" />
+		</div>
+	);
+
+	await expect(component.locator('svg')).toHaveAttribute('aria-hidden', 'false');
+});
+
+test('Omits the default label when aria-hidden', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Spinner aria-hidden="true" />
+		</div>
+	);
+
+	const spinner = component.locator('svg');
+	await expect(spinner).toHaveAttribute('aria-hidden', 'true');
+	await expect(spinner).not.toHaveAttribute('aria-label');
+	await expect(component.getByRole('progressbar')).toHaveCount(0);
+});

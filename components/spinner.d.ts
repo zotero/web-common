@@ -1,6 +1,7 @@
 import React from 'react';
 
 export interface SpinnerProps extends React.AriaAttributes {
+	label?: string | null;
 	small?: boolean;
 	large?: boolean;
 	xlarge?: boolean;
