@@ -290,6 +290,48 @@ test('Keyboard navigation skips disabled items', async ({ mount }) => {
 	await expect(item2).toBeFocused();
 });
 
+test('Renders a divider as a separator that is skipped by keyboard navigation', async ({ mount }) => {
+	const component = await mount(
+		<div className="container">
+			<UncontrolledDropdown>
+				<DropdownToggle>Click</DropdownToggle>
+				<DropdownMenu>
+					<DropdownItem>Item 1</DropdownItem>
+					<DropdownItem divider />
+					<DropdownItem>Item 2</DropdownItem>
+				</DropdownMenu>
+			</UncontrolledDropdown>
+		</div>
+	);
+
+	const toggle = component.getByRole('button', { name: 'Click' });
+	const menu = component.getByRole('menu');
+	const item1 = component.getByRole('menuitem', { name: 'Item 1' });
+	const item2 = component.getByRole('menuitem', { name: 'Item 2' });
+	const page = component.page();
+
+	await toggle.focus();
+	await page.keyboard.press('Enter');
+	await expect(menu).toMatchAriaSnapshot(`
+		- menu:
+		  - menuitem "Item 1"
+		  - separator
+		  - menuitem "Item 2"
+	`);
+	await expect(item1).toBeFocused();
+
+	// ArrowDown and ArrowUp move between the items on either side of the divider
+	await page.keyboard.press('ArrowDown');
+	await expect(item2).toBeFocused();
+	await page.keyboard.press('ArrowUp');
+	await expect(item1).toBeFocused();
+
+	// Clicking the divider leaves the menu open
+	await component.locator('.dropdown-divider').click({ force: true });
+	await page.evaluate(() => new Promise(resolve => setTimeout(resolve)));
+	await expect(menu).toBeVisible();
+});
+
 test('Supports strategy prop', async ({ mount }) => {
 	const component = await mount(
 		<div className="container">

@@ -321,18 +321,18 @@ export const DropdownItem = memo(props => {
 		}
 	}, [disabled, handleToggle, onClick]);
 
+	if (divider) {
+		return <Tag {...rest} className={cx(className, 'dropdown-divider')} role="separator" />;
+	}
+
 	return (
 		<Tag
 			{...rest}
-			className={cx(className, {
-				'disabled': disabled,
-				'dropdown-item': !divider,
-				'dropdown-divider': divider,
-			})}
+			className={cx(className, { 'disabled': disabled }, 'dropdown-item')}
 			disabled={Tag === 'button' ? disabled : null}
 			onClick={handleClick}
 			onKeyDown={handleKeyDown}
-			tabIndex={divider ? null : -2}
+			tabIndex={-2}
 			role={role}
 			ref={ref}
 		>
