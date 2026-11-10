@@ -69,6 +69,48 @@ test('Tab panels can be labelled by their tab', async ({ mount }) => {
 	await expect(component.getByRole('tabpanel', { name: 'Tab 1' })).toHaveText('Content 1');
 });
 
+test('Renders sections without tab semantics', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Tabs asSections aria-label="Sections">
+				<Tab id="tab-1" onActivate={() => {}} aria-controls="panel-1" isActive>Tab 1</Tab>
+				<Tab id="tab-2" onActivate={() => {}} aria-controls="panel-2">Tab 2</Tab>
+			</Tabs>
+			<TabPane id="panel-1" aria-labelledby="tab-1" isActive asSections>Content 1</TabPane>
+			<TabPane id="panel-2" aria-labelledby="tab-2" asSections>Content 2</TabPane>
+		</div>
+	);
+
+	await expect(component.getByRole('tablist')).toHaveCount(0);
+	await expect(component.getByRole('tab')).toHaveCount(0);
+	await expect(component.getByRole('tabpanel')).toHaveCount(0);
+	await expect(component.locator('.tabs')).not.toHaveAttribute('aria-label');
+
+	for (const name of ['Tab 1', 'Tab 2']) {
+		const button = component.getByRole('button', { name });
+		await expect(button).not.toHaveAttribute('aria-selected');
+		await expect(button).not.toHaveAttribute('aria-controls');
+	}
+	await expect(component.getByRole('button', { name: 'Tab 1' })).toHaveClass(/active/);
+
+	for (const id of ['panel-1', 'panel-2']) {
+		const pane = component.locator(`#${id}`);
+		await expect(pane).not.toHaveAttribute('role');
+		await expect(pane).not.toHaveAttribute('aria-labelledby');
+	}
+});
+
+test('Section panes keep their label when given an explicit role', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<h2 id="heading-1">Section 1</h2>
+			<TabPane role="region" aria-labelledby="heading-1" isActive asSections>Content 1</TabPane>
+		</div>
+	);
+
+	await expect(component.getByRole('region', { name: 'Section 1' })).toHaveText('Content 1');
+});
+
 test('Clicking a tab calls onActivate', async ({ mount }) => {
 	let activatedTab = null;
 

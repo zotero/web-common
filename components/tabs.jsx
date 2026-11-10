@@ -39,9 +39,11 @@ const Tab = memo(props => {
 		onActivate(ev.currentTarget);
 	}, [resetLastFocused, isDisabled, onActivate]);
 
+	const role = rest.role ? rest.role : asSections ? null : 'tab';
+
 	return (
 		<button
-			role={rest.role ? rest.role : asSections ? null : 'tab'}
+			role={role}
 			className={cx({
 				tab: true,
 				active: isActive,
@@ -50,7 +52,7 @@ const Tab = memo(props => {
 			{...pick(rest, p => p === 'id' || p.startsWith('data-') || p.startsWith('aria-'))}
 			onClick={handleClick}
 			onKeyDown={handleKeyDown}
-			aria-selected={isActive}
+			aria-selected={role === 'tab' ? isActive : undefined}
 			tabIndex={-2}
 		>
 			{children}
@@ -65,6 +67,11 @@ const Tabs = memo(({ asSections, children, className, justified, compact, activa
 	const ref = useRef(null);
 	const { focusNext, focusPrev, receiveFocus, receiveBlur, resetLastFocused } =
 		useFocusManager(ref, { initialQuerySelector: '.tab.active' });
+
+	if (asSections) {
+		delete rest['aria-label'];
+		delete rest['aria-labelledby'];
+	}
 
 	return (
 		<div
@@ -89,17 +96,29 @@ const Tabs = memo(({ asSections, children, className, justified, compact, activa
 
 Tabs.displayName = 'Tabs';
 
-const TabPane = memo(forwardRef(({ children, isActive, isLoading, className, ...rest }, ref) => (
-	<div ref={ref}
-		role={ 'role' in rest ? rest.role : 'tabpanel' }
-		className={cx(className, {
-		'tab-pane': true,
-		'active': isActive,
-		'loading': isLoading
-	})} {...rest}>
-		{isLoading ? <Spinner /> : children}
-	</div>
-)));
+const TabPane = memo(forwardRef(({ asSections, children, isActive, isLoading, className, ...rest }, ref) => {
+	const role = 'role' in rest ? rest.role : asSections ? null : 'tabpanel';
+
+	if (!role) {
+		delete rest['aria-label'];
+		delete rest['aria-labelledby'];
+	}
+
+	return (
+		<div
+			ref={ref}
+			className={cx(className, {
+				'tab-pane': true,
+				'active': isActive,
+				'loading': isLoading
+			})}
+			{...rest}
+			role={role}
+		>
+			{isLoading ? <Spinner /> : children}
+		</div>
+	);
+}));
 
 TabPane.displayName = 'TabPane';
 

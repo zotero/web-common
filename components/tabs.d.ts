@@ -27,6 +27,7 @@ export interface TabsProps {
 export const Tabs: React.FC<TabsProps>;
 
 export interface TabPaneProps extends React.HTMLAttributes<HTMLDivElement> {
+	asSections?: boolean;
 	children?: React.ReactNode;
 	className?: string;
 	isActive?: boolean;
