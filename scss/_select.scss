@@ -70,6 +70,8 @@
 
 
 	.select-input {
+		flex: 1 1 0;
+		min-width: 0;
 		outline: none;
 		max-width: 100%;
 		overflow: hidden;
@@ -81,9 +83,12 @@
 		}
 
 		> input {
+			width: 100%;
 			border: none;
 			background: none;
 			padding: 0;
+			color: inherit;
+			text-overflow: ellipsis;
 			font-family: inherit;
 			font-size: inherit;
 			font-weight: inherit;
@@ -165,5 +170,14 @@
 	.select-noresults {
 		color: defaults.$menu-no-results-color;
 		background-color: defaults.$menu-no-results-bg;
+	}
+
+	.select-status {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
 	}
 }
