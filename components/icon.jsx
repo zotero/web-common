@@ -24,7 +24,10 @@ const removeListener = (mql, listener) => {
 }
 
 export const Icon = memo(forwardRef((props, ref) => {
-	const { className, color, colorScheme = null, height, label, role = 'img', type, viewBox, width, usePixelRatio, useColorScheme, ...rest } = props;
+	const { className, color, colorScheme = null, height, label, role, type, viewBox, width, usePixelRatio, useColorScheme, ...rest } = props;
+	const ariaLabel = label || rest['aria-label'];
+	const ariaLabelledBy = rest['aria-labelledby'];
+	const hasName = !!(ariaLabel || ariaLabelledBy);
 	const style = { color, ...props.style };
 	const basename = type.split(/[\\/]/).pop();
 	const pixelRatio = usePixelRatio ? is2xMQL.matches ? '@2x' : '@1x' : '';
@@ -43,7 +46,7 @@ export const Icon = memo(forwardRef((props, ref) => {
 
 	const svgAttr = {
 		className: cx(['icon', `icon-${basename}`, className]),
-		role,
+		role: role ?? (hasName ? 'img' : null),
 		style
 	};
 
@@ -59,8 +62,11 @@ export const Icon = memo(forwardRef((props, ref) => {
 		svgAttr['viewBox'] = viewBox;
 	}
 
-	if(label) {
-		svgAttr['aria-label'] = label;
+	if(hasName) {
+		svgAttr['aria-label'] = ariaLabel;
+		svgAttr['aria-labelledby'] = ariaLabelledBy;
+	} else {
+		svgAttr['aria-hidden'] = true;
 	}
 
 	useEffect(() => {

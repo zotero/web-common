@@ -8,6 +8,8 @@ export interface IconProps {
 	height?: number | string;
 	width?: number | string;
 	label?: string;
+	'aria-label'?: string;
+	'aria-labelledby'?: string;
 	role?: string;
 	style?: React.CSSProperties;
 	symbol?: string;
