@@ -167,7 +167,6 @@ Dropdown.displayName = 'Dropdown';
 
 export const DropdownToggle = memo(forwardRef((props, ref) => {
 	const {className, tabIndex, title, onKeyDown, onClick, ...rest} = props;
-	const Tag = props.tag || Button;
 	const {isOpen, refs, handleToggle} = useContext(DropdownContext);
 
 
@@ -188,7 +187,7 @@ export const DropdownToggle = memo(forwardRef((props, ref) => {
 	}, [handleToggle, onKeyDown]);
 
 	return (
-		<Tag
+		<Button
 			{...rest}
 			title={title}
 			aria-expanded={isOpen}
@@ -200,7 +199,7 @@ export const DropdownToggle = memo(forwardRef((props, ref) => {
 			tabIndex={tabIndex}
 		>
 			{props.children}
-		</Tag>
+		</Button>
 	)
 }));
 

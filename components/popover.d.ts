@@ -48,7 +48,6 @@ export interface PopoverProps {
 export const Popover: React.FC<PopoverProps>;
 
 export interface PopoverTriggerProps {
-	tag?: React.ElementType;
 	children?: React.ReactNode;
 	className?: string;
 	icon?: boolean;

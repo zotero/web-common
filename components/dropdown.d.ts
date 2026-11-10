@@ -33,7 +33,6 @@ export interface DropdownProps {
 export const Dropdown: React.FC<DropdownProps>;
 
 export interface DropdownToggleProps {
-	tag?: React.ElementType;
 	children?: React.ReactNode;
 	className?: string;
 	onClick?: (ev: React.MouseEvent) => void;

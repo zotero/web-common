@@ -160,10 +160,8 @@ export const Popover = memo(props => {
 Popover.displayName = 'Popover';
 
 export const PopoverTrigger = memo(forwardRef((props, ref) => {
-	const { tag, className, tabIndex, title, onKeyDown, onClick, children, ...rest } = props;
-	const Tag = tag || Button;
+	const { className, tabIndex, title, onKeyDown, onClick, children, ...rest } = props;
 	const { isOpen, disabled, dialogId, refs, triggerRef, handleToggle } = useContext(PopoverContext);
-	const isNativeButton = Tag === Button || Tag === 'button';
 
 	const handleClick = useCallback(ev => {
 		onClick?.(ev);
@@ -180,14 +178,13 @@ export const PopoverTrigger = memo(forwardRef((props, ref) => {
 	}, [handleToggle, onKeyDown]);
 
 	return (
-		<Tag
+		<Button
 			{...rest}
 			title={title}
 			aria-controls={dialogId}
 			aria-expanded={isOpen}
 			aria-haspopup="dialog"
-			aria-disabled={!isNativeButton && disabled ? true : undefined}
-			disabled={isNativeButton ? disabled : undefined}
+			disabled={disabled}
 			className={cx('popover-trigger', className, { disabled })}
 			onClick={handleClick}
 			onKeyDown={handleKeyDown}
@@ -195,7 +192,7 @@ export const PopoverTrigger = memo(forwardRef((props, ref) => {
 			tabIndex={tabIndex}
 		>
 			{children}
-		</Tag>
+		</Button>
 	);
 }));
 
