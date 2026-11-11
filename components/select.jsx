@@ -319,11 +319,7 @@ const Select = memo(forwardRef((props, ref) => {
 			}
 			ev.preventDefault();
 		} else if (key === 'ArrowUp' && altKey) {
-			if (searchable) {
-				dispatchState({type: 'close'});
-			} else {
-				commitHighlighted(ev);
-			}
+			commitHighlighted(ev);
 			ev.preventDefault();
 		} else if (key === 'ArrowUp') {
 			highlightIndex(getNextIndex(-1));

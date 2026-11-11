@@ -827,12 +827,12 @@ test('ArrowUp and Alt+ArrowDown open the listbox, Alt+ArrowUp selects the highli
 	await expect.poll(() => changeValue).toBe('bar');
 });
 
-test('Alt+ArrowUp closes a searchable select without selecting', async ({ mount }) => {
-	let changeCount = 0;
+test('Alt+ArrowUp selects the highlighted option in a searchable select', async ({ mount }) => {
+	let changeValue = null;
 
 	const component = await mount(
 		<div>
-			<Select searchable options={options} value="foo" onChange={() => { changeCount++; }} />
+			<Select searchable options={options} value="foo" onChange={v => { changeValue = v; }} />
 		</div>
 	);
 	const page = component.page();
@@ -844,8 +844,7 @@ test('Alt+ArrowUp closes a searchable select without selecting', async ({ mount 
 
 	await page.keyboard.press('Alt+ArrowUp');
 	await expect(component.getByRole('listbox')).toHaveCount(0);
-	await expect(combobox).toHaveValue('Foo');
-	expect(changeCount).toBe(0);
+	await expect.poll(() => changeValue).toBe('bar');
 });
 
 test('A searchable select only sets aria-activedescendant while navigating the options', async ({ mount }) => {
