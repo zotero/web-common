@@ -1,5 +1,6 @@
 // @ts-check
 import {defineConfig, devices} from '@playwright/experimental-ct-react';
+import autoprefixer from 'autoprefixer';
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -28,13 +29,19 @@ export default defineConfig({
 		/* Port to use for Playwright component endpoint. */
 		ctPort: 3100,
 
-		// stub out the Node-only require('jsdom') in zotero-utilities
 		ctViteConfig: {
+			// stub out the Node-only require('jsdom') in zotero-utilities
 			plugins: [{
 				name: 'stub-jsdom',
 				resolveId: id => (id === 'jsdom' ? '\0jsdom-stub' : null),
 				load: id => (id === '\0jsdom-stub' ? 'export const JSDOM = undefined;' : null),
 			}],
+			// prefix styles like the projects that consume them do
+			css: {
+				postcss: {
+					plugins: [autoprefixer()],
+				},
+			},
 		},
 	},
 

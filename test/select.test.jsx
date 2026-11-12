@@ -35,6 +35,30 @@ test('Clicking on the select opens/closes the listbox', async ({ mount }) => {
 	await expect(component.getByRole('listbox')).toHaveCount(0);
 });
 
+test('Clicking on the select does not match :focus-visible', async ({ mount }) => {
+	const component = await mount(
+		<div>
+			<Select options={options} value="bar" />
+		</div>
+	);
+	const combobox = component.getByRole('combobox');
+
+	await component.locator('.select-value-label').click();
+	await expect(combobox).toBeFocused();
+	expect(await combobox.evaluate(el => el.matches(':focus-visible'))).toBe(false);
+});
+
+test('Double-clicking on the select does not select its label', async ({ mount, page }) => {
+	const component = await mount(
+		<div>
+			<Select options={[{ label: 'Foo bar baz', value: 'foo' }]} value="foo" />
+		</div>
+	);
+
+	await component.locator('.select-value-label').dblclick();
+	expect(await page.evaluate(() => window.getSelection().toString())).toBe('');
+});
+
 test('Clicking on an option fires onChange but not onBlur', async ({ mount }) => {
 	let changeCount = 0;
 	let changeValue = null;

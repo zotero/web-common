@@ -186,15 +186,16 @@ const Select = memo(forwardRef((props, ref) => {
 		dispatchState({type: 'blur', options});
 	}, [onBlur, options]);
 
-	// Keep focus on the combobox when clicking anywhere else within the component
+	// Keep focus on the combobox when clicking anywhere else within the component. A click inside a
+	// select-only combobox focuses it natively, as focus() from a script can match :focus-visible.
 	const handleMouseDown = useCallback(ev => {
 		const combobox = comboboxRef.current;
-		if (ev.target === combobox && document.activeElement === combobox) {
+		if (combobox?.contains(ev.target) && (!searchable || document.activeElement === combobox)) {
 			return;
 		}
 		ev.preventDefault();
 		combobox?.focus();
-	}, []);
+	}, [searchable]);
 
 	const handleClick = useCallback(ev => {
 		if (ev.target.closest('.select-option')) {

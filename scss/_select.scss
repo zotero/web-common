@@ -24,6 +24,10 @@
 			box-shadow: 0 0 0 2px defaults.$input-focus-color;
 			outline: none;
 		}
+
+		@include selectors.state(".select-component:not(.is-searchable)") {
+			user-select: none;
+		}
 	}
 
 	&.is-searchable.is-open {
